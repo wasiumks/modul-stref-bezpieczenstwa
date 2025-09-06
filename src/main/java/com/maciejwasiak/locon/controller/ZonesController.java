@@ -112,4 +112,32 @@ public class ZonesController {
 
         return "zone-wizard";
     }
+
+    @GetMapping("/zones/success")
+    public String zoneSuccess(@RequestParam(defaultValue = "1") int zoneId, Model model, HttpSession session) {
+        // Get user from session
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null) {
+            return "redirect:/auth/login";
+        }
+
+        // Mock zone data for success screen
+        Map<String, Object> zone = Map.of(
+                "id", zoneId,
+                "name", "Dom",
+                "address", "ul. Przykładowa 123, Warszawa",
+                "icon", "home",
+                "devicesCount", 2,
+                "radius", 500
+        );
+
+        model.addAttribute("pageTitle", "Strefa utworzona");
+        model.addAttribute("zone", zone);
+        model.addAttribute("totalZones", 1);
+        model.addAttribute("totalDevices", 3);
+        model.addAttribute("user", user);
+
+        return "zone-success";
+    }
 }

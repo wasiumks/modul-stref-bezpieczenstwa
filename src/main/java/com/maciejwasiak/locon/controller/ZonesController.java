@@ -26,8 +26,36 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
         
-        // For Phase 5.1 - Start with empty state to demonstrate onboarding
-        List<Map<String, Object>> zones = List.of(); // Empty list for onboarding
+        // For Phase 5.2 - Show sample zones for list view demonstration
+        List<Map<String, Object>> zones = List.of(
+                Map.of(
+                        "id", 1,
+                        "name", "Dom",
+                        "address", "ul. Przykładowa 123, Warszawa",
+                        "icon", "home",
+                        "devicesCount", 2,
+                        "radius", 500,
+                        "devices", List.of("iPhone 13", "Apple Watch")
+                ),
+                Map.of(
+                        "id", 2,
+                        "name", "Szkoła",
+                        "address", "ul. Szkolna 45, Warszawa",
+                        "icon", "school",
+                        "devicesCount", 1,
+                        "radius", 300,
+                        "devices", List.of("Samsung Galaxy")
+                ),
+                Map.of(
+                        "id", 3,
+                        "name", "Praca",
+                        "address", "ul. Biurowa 78, Warszawa",
+                        "icon", "work",
+                        "devicesCount", 1,
+                        "radius", 200,
+                        "devices", List.of("iPhone 13")
+                )
+        );
 
         model.addAttribute("pageTitle", "Strefy Bezpieczeństwa");
         model.addAttribute("pageDescription", "Zarządzaj strefami bezpieczeństwa dla swoich bliskich");

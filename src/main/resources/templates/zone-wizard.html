@@ -6,20 +6,36 @@
 <body>
     <div layout:fragment="content">
         <!-- Wizard Container -->
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-4xl mx-auto" th:data-current-step="${currentStep}">
             <!-- Progress Bar -->
             <div class="mb-8">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center" th:each="step, iterStat : ${wizardSteps}">
                             <div class="flex items-center">
-                                <div th:class="${iterStat.index < currentStep} ? 'bg-green-500 text-white' : 
-                                               ${iterStat.index == currentStep} ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'"
-                                     class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold">
+                                <!-- Completed step -->
+                                <div th:if="${iterStat.index < currentStep}" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-green-500 text-white">
                                     <span th:text="${iterStat.index + 1}">1</span>
                                 </div>
-                                <span th:class="${iterStat.index <= currentStep} ? 'text-gray-900' : 'text-gray-500'"
-                                      class="ml-2 text-sm font-medium" th:text="${step.title}">Krok</span>
+                                <!-- Current step -->
+                                <div th:if="${iterStat.index == currentStep}" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-blue-500 text-white">
+                                    <span th:text="${iterStat.index + 1}">1</span>
+                                </div>
+                                <!-- Future step -->
+                                <div th:if="${iterStat.index > currentStep}" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold bg-gray-200 text-gray-500">
+                                    <span th:text="${iterStat.index + 1}">1</span>
+                                </div>
+                                
+                                <!-- Step title -->
+                                <span th:if="${iterStat.index <= currentStep}" 
+                                      class="ml-2 text-sm font-medium text-gray-900" 
+                                      th:text="${step.title}">Krok</span>
+                                <span th:if="${iterStat.index > currentStep}" 
+                                      class="ml-2 text-sm font-medium text-gray-500" 
+                                      th:text="${step.title}">Krok</span>
                             </div>
                             <div th:if="${!iterStat.last}" class="w-8 h-0.5 bg-gray-200 mx-2"></div>
                         </div>
@@ -337,14 +353,20 @@
         function nextStep() {
             // Validate current step
             if (validateCurrentStep()) {
-                // For now, just show alert - will be replaced with actual navigation
-                alert('Przechodzenie do następnego kroku będzie dostępne w następnej fazie rozwoju!');
+                const currentStep = parseInt(document.querySelector('[data-current-step]')?.dataset.currentStep || '0');
+                const nextStep = currentStep + 1;
+                if (nextStep < 4) {
+                    window.location.href = `/zones/wizard?step=${nextStep}`;
+                }
             }
         }
 
         function previousStep() {
-            // For now, just show alert - will be replaced with actual navigation
-            alert('Przechodzenie do poprzedniego kroku będzie dostępne w następnej fazie rozwoju!');
+            const currentStep = parseInt(document.querySelector('[data-current-step]')?.dataset.currentStep || '0');
+            const prevStep = currentStep - 1;
+            if (prevStep >= 0) {
+                window.location.href = `/zones/wizard?step=${prevStep}`;
+            }
         }
 
         function cancelWizard() {
@@ -354,8 +376,63 @@
         }
 
         function saveZone() {
-            // For now, redirect to success screen - will be replaced with actual save functionality
-            window.location.href = '/zones/success?zoneId=1';
+            // Collect form data
+            const formData = new FormData();
+            
+            // Get zone name
+            const zoneName = document.getElementById('zoneName');
+            if (zoneName && zoneName.value.trim()) {
+                formData.append('name', zoneName.value.trim());
+            } else {
+                alert('Proszę wprowadzić nazwę strefy');
+                return;
+            }
+            
+            // Get selected icon
+            if (selectedIcon) {
+                formData.append('icon', selectedIcon.name);
+            } else {
+                alert('Proszę wybrać ikonę strefy');
+                return;
+            }
+            
+            // Get address
+            const zoneAddress = document.getElementById('zoneAddress');
+            if (zoneAddress && zoneAddress.value.trim()) {
+                formData.append('address', zoneAddress.value.trim());
+            } else {
+                alert('Proszę wprowadzić adres strefy');
+                return;
+            }
+            
+            // Get radius
+            const radiusSlider = document.getElementById('radiusSlider');
+            if (radiusSlider) {
+                formData.append('radius', radiusSlider.value);
+            }
+            
+            // Get selected devices
+            const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
+            selectedDevices.forEach(device => {
+                formData.append('deviceIds', device.value);
+            });
+            
+            // Submit form
+            fetch('/zones', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = response.url;
+                } else {
+                    alert('Wystąpił błąd podczas tworzenia strefy');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Wystąpił błąd podczas tworzenia strefy');
+            });
         }
 
         function validateCurrentStep() {

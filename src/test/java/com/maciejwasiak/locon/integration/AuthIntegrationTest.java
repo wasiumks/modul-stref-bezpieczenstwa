@@ -5,6 +5,9 @@ import com.maciejwasiak.locon.dto.OtpRequest;
 import com.maciejwasiak.locon.model.User;
 import com.maciejwasiak.locon.model.UserRole;
 import com.maciejwasiak.locon.repository.UserRepository;
+import com.maciejwasiak.locon.repository.DeviceRepository;
+import com.maciejwasiak.locon.repository.ZoneDeviceRepository;
+import com.maciejwasiak.locon.repository.ZoneRepository;
 import com.maciejwasiak.locon.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,12 +35,25 @@ class AuthIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private DeviceRepository deviceRepository;
+    
+    @Autowired
+    private ZoneDeviceRepository zoneDeviceRepository;
+    
+    @Autowired
+    private ZoneRepository zoneRepository;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        // Delete in correct order to respect foreign key constraints
+        zoneDeviceRepository.deleteAll();
+        deviceRepository.deleteAll();
+        zoneRepository.deleteAll();
         userRepository.deleteAll();
         authService.createDefaultUsers();
     }

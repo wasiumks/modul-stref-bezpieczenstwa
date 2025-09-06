@@ -43,7 +43,7 @@ public class Zone {
     
     // Devices associated with this zone
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "zone_devices", joinColumns = @JoinColumn(name = "zone_id"))
+    @CollectionTable(name = "zone_device_ids", joinColumns = @JoinColumn(name = "zone_id"))
     @Column(name = "device_id")
     private List<String> deviceIds = new java.util.ArrayList<>();
     

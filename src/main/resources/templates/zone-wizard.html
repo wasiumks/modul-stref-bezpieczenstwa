@@ -226,10 +226,6 @@
                                     <span>Promień:</span>
                                     <span id="summaryRadius" class="font-medium">-</span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span>Powiadomienia:</span>
-                                    <span id="summaryNotifications" class="font-medium">-</span>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -253,7 +249,7 @@
                         </button>
                         <button type="button" 
                                 th:if="${currentStep < 3}"
-                                onclick="nextStep()" 
+                                onclick="console.log('Button clicked! Current step from Thymeleaf:', /*[[${currentStep}]]*/); nextStep();" 
                                 class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                             Dalej →
                         </button>
@@ -284,15 +280,42 @@
 
         // Navigation functions - defined globally
         window.nextStep = function() {
-            console.log('nextStep() called, currentStep:', currentStep);
+            console.log('=== nextStep() CALLED ===');
+            console.log('currentStep:', currentStep);
+            console.log('typeof currentStep:', typeof currentStep);
+            
+            // Store debug info in localStorage so it persists after refresh
+            localStorage.setItem('debug_nextStep', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                currentStep: currentStep,
+                functionCalled: true
+            }));
+            
             if (validateCurrentStep()) {
+                // Save current step data before moving to next step
+                saveWizardData();
+                
                 const nextStep = currentStep + 1;
-                console.log('Moving to next step:', nextStep);
+                console.log('Validation passed, moving to next step:', nextStep);
+                localStorage.setItem('debug_validation', JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    validationPassed: true,
+                    nextStep: nextStep
+                }));
+                
                 if (nextStep < 4) {
+                    console.log('Redirecting to:', `/zones/wizard?step=${nextStep}`);
                     window.location.href = `/zones/wizard?step=${nextStep}`;
+                } else {
+                    console.log('Already at last step');
                 }
             } else {
-                console.log('Validation failed');
+                console.log('=== VALIDATION FAILED ===');
+                localStorage.setItem('debug_validation', JSON.stringify({
+                    timestamp: new Date().toISOString(),
+                    validationPassed: false,
+                    currentStep: currentStep
+                }));
             }
         }
 
@@ -366,40 +389,41 @@
 
         window.saveZone = function() {
             console.log('saveZone() called');
-            const formData = new FormData();
+            console.log('wizardData:', wizardData);
             
-            const zoneName = document.getElementById('zoneName');
-            if (zoneName && zoneName.value.trim()) {
-                formData.append('name', zoneName.value.trim());
-            } else {
+            // Use wizardData instead of trying to find form elements
+            if (!wizardData.name || !wizardData.name.trim()) {
                 alert('Proszę wprowadzić nazwę strefy');
                 return;
             }
             
-            if (selectedIcon) {
-                formData.append('icon', selectedIcon.name);
-            } else {
+            if (!wizardData.icon) {
                 alert('Proszę wybrać ikonę strefy');
                 return;
             }
             
-            const zoneAddress = document.getElementById('zoneAddress');
-            if (zoneAddress && zoneAddress.value.trim()) {
-                formData.append('address', zoneAddress.value.trim());
-            } else {
+            if (!wizardData.address || !wizardData.address.trim()) {
                 alert('Proszę wprowadzić adres strefy');
                 return;
             }
             
-            const radiusSlider = document.getElementById('radiusSlider');
-            if (radiusSlider) {
-                formData.append('radius', radiusSlider.value);
-            }
+            const formData = new FormData();
+            formData.append('name', wizardData.name.trim());
+            formData.append('icon', wizardData.icon);
+            formData.append('address', wizardData.address.trim());
+            formData.append('radius', wizardData.radius || 500);
             
+            // Get selected devices from checkboxes if they exist
             const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
+            console.log('Selected devices:', selectedDevices.length);
             selectedDevices.forEach(device => {
+                console.log('Device ID:', device.value);
                 formData.append('deviceIds', device.value);
             });
+            
+            // Also save device count to wizardData for summary
+            wizardData.devicesCount = selectedDevices.length;
+            wizardData.deviceIds = Array.from(selectedDevices).map(device => device.value);
             
             fetch('/zones', {
                 method: 'POST',
@@ -420,12 +444,20 @@
         }
 
         function validateCurrentStep() {
+            console.log('=== VALIDATE CURRENT STEP ===');
             console.log('validateCurrentStep() called for step:', currentStep);
+            console.log('typeof currentStep:', typeof currentStep);
+            console.log('URL:', window.location.href);
             console.log('selectedIcon:', selectedIcon);
             console.log('wizardData:', wizardData);
             
-            if (currentStep === 0) {
-                // Try multiple ways to find the zone name input
+            // Only validate the current step's fields
+            if (currentStep === 3) {
+                // Step 3 (summary) - no validation needed, just return true
+                console.log('Step 3 (summary) - no validation needed');
+                return true;
+            } else if (currentStep === 0) {
+                // Step 0: Zone name and icon selection
                 let zoneName = document.getElementById('zoneName');
                 if (!zoneName) {
                     zoneName = document.querySelector('input[placeholder*="nazwę strefy"]');
@@ -441,13 +473,15 @@
                     alert('Proszę wprowadzić nazwę strefy');
                     return false;
                 }
+                // Save the zone name
+                wizardData.name = zoneName.value.trim();
+                
                 if (!selectedIcon || !selectedIcon.name || selectedIcon.name.includes('${')) {
                     alert('Proszę wybrać ikonę strefy');
                     return false;
                 }
-            }
-            
-            if (currentStep === 1) {
+            } else if (currentStep === 1) {
+                // Step 1: Zone address
                 const zoneAddress = document.getElementById('zoneAddress');
                 console.log('zoneAddress element:', zoneAddress);
                 console.log('zoneAddress value:', zoneAddress ? zoneAddress.value : 'element not found');
@@ -455,7 +489,16 @@
                     alert('Proszę wprowadzić adres strefy');
                     return false;
                 }
+                // Save the zone address
+                wizardData.address = zoneAddress.value.trim();
+            } else if (currentStep === 2) {
+                // Step 2: Radius (optional, has default value)
+                const radiusSlider = document.getElementById('radiusSlider');
+                if (radiusSlider) {
+                    wizardData.radius = parseInt(radiusSlider.value) || 500;
+                }
             }
+            // Step 3 (summary) doesn't need validation
             
             return true;
         }
@@ -502,31 +545,95 @@
         }
 
         function updateSummary() {
+            console.log('updateSummary() called, wizardData:', wizardData);
+            
+            // Try to get current values from form fields if they exist
             const nameInput = document.getElementById('zoneName');
             const addressInput = document.getElementById('zoneAddress');
+            const radiusSlider = document.getElementById('radiusSlider');
             
-            if (nameInput) wizardData.name = nameInput.value;
-            if (addressInput) wizardData.address = addressInput.value;
+            if (nameInput && nameInput.value) {
+                wizardData.name = nameInput.value;
+                console.log('Updated name from input:', wizardData.name);
+            }
+            if (addressInput && addressInput.value) {
+                wizardData.address = addressInput.value;
+                console.log('Updated address from input:', wizardData.address);
+            }
+            if (radiusSlider && radiusSlider.value) {
+                wizardData.radius = parseInt(radiusSlider.value);
+                console.log('Updated radius from input:', wizardData.radius);
+            }
             
+            // Update summary display
             const summaryName = document.getElementById('summaryName');
             const summaryAddress = document.getElementById('summaryAddress');
             const summaryRadius = document.getElementById('summaryRadius');
             const summaryNotifications = document.getElementById('summaryNotifications');
             
-            if (summaryName) summaryName.textContent = wizardData.name || '-';
-            if (summaryAddress) summaryAddress.textContent = wizardData.address || '-';
-            if (summaryRadius) summaryRadius.textContent = wizardData.radius + 'm';
+            if (summaryName) {
+                summaryName.textContent = wizardData.name || '-';
+                console.log('Summary name set to:', wizardData.name || '-');
+            }
+            if (summaryAddress) {
+                summaryAddress.textContent = wizardData.address || '-';
+                console.log('Summary address set to:', wizardData.address || '-');
+            }
+            if (summaryRadius) {
+                summaryRadius.textContent = (wizardData.radius || 500) + 'm';
+                console.log('Summary radius set to:', (wizardData.radius || 500) + 'm');
+            }
             
             const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
+            const deviceCount = selectedDevices.length;
+            
+            // Update wizardData with device count
+            wizardData.devicesCount = deviceCount;
+            wizardData.deviceIds = Array.from(selectedDevices).map(device => device.value);
+            
             if (summaryNotifications) {
-                summaryNotifications.textContent = selectedDevices.length + ' urządzeń';
+                summaryNotifications.textContent = deviceCount + ' urządzeń';
+                console.log('Summary notifications set to:', deviceCount + ' urządzeń');
             }
+            
+            // Save the updated data
+            saveWizardData();
         }
 
-        // Initialize wizard
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Wizard initialized, currentStep:', currentStep);
-            loadWizardData();
+            // Initialize wizard
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the actual step from the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const actualStep = parseInt(urlParams.get('step') || '0');
+                currentStep = actualStep; // Update the global variable
+                
+                console.log('Wizard initialized, currentStep from URL:', actualStep);
+                console.log('Wizard initialized, currentStep variable:', currentStep);
+                
+                // Display debug information from previous page loads
+                const debugNextStep = localStorage.getItem('debug_nextStep');
+                const debugValidation = localStorage.getItem('debug_validation');
+                
+                if (debugNextStep) {
+                    console.log('=== DEBUG NEXTSTEP ===');
+                    console.log(JSON.parse(debugNextStep));
+                }
+                
+                if (debugValidation) {
+                    console.log('=== DEBUG VALIDATION ===');
+                    console.log(JSON.parse(debugValidation));
+                }
+                
+                // Clear debug info after displaying
+                localStorage.removeItem('debug_nextStep');
+                localStorage.removeItem('debug_validation');
+                
+                loadWizardData();
+                
+                // Update summary if we're on step 3
+                if (currentStep === 3) {
+                    updateSummary();
+                }
             
             const radiusSlider = document.getElementById('radiusSlider');
             const radiusValue = document.getElementById('radiusValue');

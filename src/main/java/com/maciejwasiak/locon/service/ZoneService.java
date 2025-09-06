@@ -28,14 +28,22 @@ public class ZoneService {
     public Zone createZone(String name, String address, String icon, Integer radius, 
                           List<String> deviceIds, User user) {
         log.info("Creating zone: {} for user: {}", name, user.getPhone());
+        log.info("User ID: {}, User Phone: {}", user.getId(), user.getPhone());
+        log.info("Device IDs: {}", deviceIds);
         
-        Zone zone = new Zone(name, address, icon, radius, user);
-        zone.setDeviceIds(deviceIds);
-        
-        Zone savedZone = zoneRepository.save(zone);
-        log.info("Zone created successfully with ID: {}", savedZone.getId());
-        
-        return savedZone;
+        try {
+            Zone zone = new Zone(name, address, icon, radius, user);
+            zone.setDeviceIds(deviceIds);
+            
+            log.info("Zone object created, saving to database...");
+            Zone savedZone = zoneRepository.save(zone);
+            log.info("Zone created successfully with ID: {}", savedZone.getId());
+            
+            return savedZone;
+        } catch (Exception e) {
+            log.error("Error creating zone: {}", e.getMessage(), e);
+            throw e;
+        }
     }
     
     /**

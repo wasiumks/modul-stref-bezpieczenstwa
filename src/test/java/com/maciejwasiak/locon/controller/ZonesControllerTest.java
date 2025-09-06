@@ -42,7 +42,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.enumeration(List.of("user", "userRole", "userPhone")));
 
         // When
-        String result = zonesController.zones(model, session);
+        String result = zonesController.zones(null, model, session);
 
         // Then
         assertEquals("zones-simple", result);
@@ -63,7 +63,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.emptyEnumeration());
 
         // When
-        String result = zonesController.zones(model, session);
+        String result = zonesController.zones(null, model, session);
 
         // Then
         assertEquals("redirect:/auth/login", result);
@@ -80,7 +80,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.enumeration(List.of("user", "userRole", "userPhone")));
 
         // When
-        zonesController.zones(model, session);
+        zonesController.zones(null, model, session);
 
         // Then
         verify(model).addAttribute("pageTitle", "Strefy Bezpieczeństwa");
@@ -98,7 +98,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.enumeration(List.of("user", "userRole", "userPhone")));
 
         // When
-        zonesController.zones(model, session);
+        zonesController.zones(null, model, session);
 
         // Then
         verify(model).addAttribute(eq("zones"), argThat(zones -> {
@@ -126,7 +126,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.enumeration(List.of("user", "userRole", "userPhone")));
 
         // When
-        zonesController.zones(model, session);
+        zonesController.zones(null, model, session);
 
         // Then
         verify(model).addAttribute("hasZones", true);
@@ -143,7 +143,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.enumeration(List.of("user", "userRole", "userPhone")));
 
         // When
-        String result = zonesController.zones(model, session);
+        String result = zonesController.zones(null, model, session);
 
         // Then
         assertEquals("zones-simple", result);
@@ -158,7 +158,7 @@ class ZonesControllerTest {
         when(session.getAttributeNames()).thenReturn(java.util.Collections.emptyEnumeration());
 
         // When
-        String result = zonesController.zones(model, session);
+        String result = zonesController.zones(null, model, session);
 
         // Then
         assertEquals("redirect:/auth/login", result);

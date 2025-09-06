@@ -42,10 +42,14 @@ public class Zone {
     private User user;
     
     // Devices associated with this zone
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "zone_devices", joinColumns = @JoinColumn(name = "zone_id"))
     @Column(name = "device_id")
-    private List<String> deviceIds;
+    private List<String> deviceIds = new java.util.ArrayList<>();
+    
+    // Notifications enabled for this zone
+    @Column(name = "notifications_enabled", nullable = false)
+    private Boolean notificationsEnabled = true;
     
     // Constructors
     public Zone() {
@@ -161,6 +165,14 @@ public class Zone {
     
     public void setDeviceIds(List<String> deviceIds) {
         this.deviceIds = deviceIds;
+    }
+    
+    public Boolean getNotificationsEnabled() {
+        return notificationsEnabled;
+    }
+    
+    public void setNotificationsEnabled(Boolean notificationsEnabled) {
+        this.notificationsEnabled = notificationsEnabled;
     }
     
     // Helper method to get device count

@@ -1,6 +1,15 @@
 # Development Tasks – Safe Zones Module (*Bezpieczna Rodzina*)
 
-## Phase 1 – Project Setup
+## 📊 Project Progress Summary
+- **Phase 1**: ✅ COMPLETED - Project Setup & Configuration
+- **Phase 2**: ✅ COMPLETED - Authentication & Permissions with comprehensive testing
+- **Phase 3**: 🔄 NEXT - Database Schema (MySQL)
+- **Total Tests**: 73 tests (100% passing)
+- **Test Coverage**: Unit tests, Integration tests, Repository tests, Controller tests
+
+---
+
+## Phase 1 – Project Setup ✅ COMPLETED
 - [x] **Backend Setup (Spring Boot + MySQL)**
   - [x] Initialize Spring Boot project (Maven/Gradle)
   - [x] Configure MySQL connection (`application.properties`)
@@ -16,11 +25,11 @@
 ---
 
 ## Phase 2 – Authentication & Permissions
-- [ ] **Mock OTP Authentication**
+- [x] **Mock OTP Authentication**
   - Implement login page (Thymeleaf)
   - Mock OTP validation (code sent displayed on console/log)
   - Store logged-in user in session
-- [ ] **Role-Based Access Control**
+- [x] **Role-Based Access Control**
   - Define roles: `ADMIN`, `USER`, `VIEWER`
   - Restrict Thymeleaf views and API endpoints
   - Implement `/api/user/permissions` mock returning `{ "role": "Admin" }`

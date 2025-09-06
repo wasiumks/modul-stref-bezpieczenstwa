@@ -76,7 +76,8 @@
                                 <div th:each="icon : ${availableIcons}" 
                                      class="icon-option cursor-pointer p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors duration-200"
                                      th:data-icon="${icon.name}"
-                                     th:onclick="selectIcon('${icon.name}', '${icon.emoji}')">
+                                     th:data-emoji="${icon.emoji}"
+                                     onclick="selectIconFromElement(this)">
                                     <div class="text-3xl mb-2" th:text="${icon.emoji}">🏠</div>
                                     <div class="text-sm text-gray-600" th:text="${icon.label}">Dom</div>
                                 </div>
@@ -268,8 +269,8 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script>
+    <th:block layout:fragment="scripts">
+        <script>
         // Global variables
         let selectedIcon = null;
         let currentStep = /*[[${currentStep}]]*/ 0;
@@ -282,7 +283,7 @@
         };
 
         // Navigation functions - defined globally
-        function nextStep() {
+        window.nextStep = function() {
             console.log('nextStep() called, currentStep:', currentStep);
             if (validateCurrentStep()) {
                 const nextStep = currentStep + 1;
@@ -295,7 +296,7 @@
             }
         }
 
-        function previousStep() {
+        window.previousStep = function() {
             console.log('previousStep() called, currentStep:', currentStep);
             const prevStep = currentStep - 1;
             if (prevStep >= 0) {
@@ -304,7 +305,7 @@
             }
         }
 
-        function cancelWizard() {
+        window.cancelWizard = function() {
             console.log('cancelWizard() called');
             if (confirm('Czy na pewno chcesz anulować tworzenie strefy? Wszystkie wprowadzone dane zostaną utracone.')) {
                 localStorage.removeItem('wizardData');
@@ -312,7 +313,7 @@
             }
         }
 
-        function selectIcon(iconName, iconEmoji) {
+        window.selectIcon = function(iconName, iconEmoji) {
             console.log('selectIcon() called:', iconName, iconEmoji);
             // Remove previous selection
             document.querySelectorAll('.icon-option').forEach(option => {
@@ -330,7 +331,28 @@
             saveWizardData();
         }
 
-        function setRadius(radius) {
+        window.selectIconFromElement = function(element) {
+            const iconName = element.getAttribute('data-icon');
+            const iconEmoji = element.getAttribute('data-emoji');
+            console.log('selectIconFromElement() called:', iconName, iconEmoji);
+            
+            // Remove previous selection
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.classList.remove('border-blue-500', 'bg-blue-50');
+                option.classList.add('border-gray-200');
+            });
+            
+            // Add selection to clicked option
+            element.classList.add('border-blue-500', 'bg-blue-50');
+            element.classList.remove('border-gray-200');
+            
+            selectedIcon = { name: iconName, emoji: iconEmoji };
+            wizardData.icon = iconName;
+            updateSummary();
+            saveWizardData();
+        }
+
+        window.setRadius = function(radius) {
             const slider = document.getElementById('radiusSlider');
             const value = document.getElementById('radiusValue');
             
@@ -342,7 +364,7 @@
             }
         }
 
-        function saveZone() {
+        window.saveZone = function() {
             console.log('saveZone() called');
             const formData = new FormData();
             
@@ -399,14 +421,27 @@
 
         function validateCurrentStep() {
             console.log('validateCurrentStep() called for step:', currentStep);
+            console.log('selectedIcon:', selectedIcon);
+            console.log('wizardData:', wizardData);
             
             if (currentStep === 0) {
-                const zoneName = document.getElementById('zoneName');
+                // Try multiple ways to find the zone name input
+                let zoneName = document.getElementById('zoneName');
+                if (!zoneName) {
+                    zoneName = document.querySelector('input[placeholder*="nazwę strefy"]');
+                }
+                if (!zoneName) {
+                    zoneName = document.querySelector('input[type="text"]');
+                }
+                
+                console.log('zoneName element:', zoneName);
+                console.log('zoneName value:', zoneName ? zoneName.value : 'element not found');
+                
                 if (!zoneName || !zoneName.value.trim()) {
                     alert('Proszę wprowadzić nazwę strefy');
                     return false;
                 }
-                if (!selectedIcon) {
+                if (!selectedIcon || !selectedIcon.name || selectedIcon.name.includes('${')) {
                     alert('Proszę wybrać ikonę strefy');
                     return false;
                 }
@@ -414,6 +449,8 @@
             
             if (currentStep === 1) {
                 const zoneAddress = document.getElementById('zoneAddress');
+                console.log('zoneAddress element:', zoneAddress);
+                console.log('zoneAddress value:', zoneAddress ? zoneAddress.value : 'element not found');
                 if (!zoneAddress || !zoneAddress.value.trim()) {
                     alert('Proszę wprowadzić adres strefy');
                     return false;
@@ -526,6 +563,7 @@
                 updateSummary();
             }
         });
-    </script>
+        </script>
+    </th:block>
 </body>
 </html>

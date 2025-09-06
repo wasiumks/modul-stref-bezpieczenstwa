@@ -19,10 +19,6 @@ public class AuthService {
     private final Random random = new Random();
     
     public String generateOtp(String phone) {
-        log.info("=== OTP GENERATION STARTED ===");
-        log.info("Input phone: {}", phone);
-        
-        // Generate 6-digit OTP
         String otp = String.format("%06d", random.nextInt(1000000));
         log.info("Generated OTP: {}", otp);
         
@@ -42,13 +38,6 @@ public class AuthService {
         log.info("OTP Code: {}", otp);
         log.info("Expires at: {}", user.getOtpExpiresAt());
         log.info("===================");
-        
-        // Also print to console for better visibility
-        System.out.println("=== OTP GENERATED ===");
-        System.out.println("Phone: " + phone);
-        System.out.println("OTP Code: " + otp);
-        System.out.println("Expires at: " + user.getOtpExpiresAt());
-        System.out.println("===================");
         
         return otp;
     }
@@ -77,7 +66,6 @@ public class AuthService {
     }
     
     public void createDefaultUsers() {
-        // Create default users if they don't exist
         if (userRepository.findByPhone("+48123456789").isEmpty()) {
             userRepository.save(new User("+48123456789", UserRole.ADMIN));
         }

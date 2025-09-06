@@ -36,14 +36,30 @@
                                 <!-- Zone Header -->
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex items-center">
-                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4"
-                                             th:classappend="${zone.icon == 'home'} ? 'bg-blue-100' : 
-                                                           ${zone.icon == 'school'} ? 'bg-green-100' : 
-                                                           ${zone.icon == 'work'} ? 'bg-purple-100' : 'bg-orange-100'">
-                                            <span class="text-2xl" 
-                                                  th:text="${zone.icon == 'home'} ? '🏠' : 
-                                                          ${zone.icon == 'school'} ? '🏫' : 
-                                                          ${zone.icon == 'work'} ? '🏢' : '🏥'">🏠</span>
+                                        <!-- Home Icon -->
+                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 bg-blue-100" 
+                                             th:if="${zone.icon == 'home'}">
+                                            <span class="text-2xl">🏠</span>
+                                        </div>
+                                        <!-- School Icon -->
+                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 bg-green-100" 
+                                             th:if="${zone.icon == 'school'}">
+                                            <span class="text-2xl">🏫</span>
+                                        </div>
+                                        <!-- Work Icon -->
+                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 bg-purple-100" 
+                                             th:if="${zone.icon == 'work'}">
+                                            <span class="text-2xl">🏢</span>
+                                        </div>
+                                        <!-- Hospital Icon -->
+                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 bg-orange-100" 
+                                             th:if="${zone.icon == 'hospital'}">
+                                            <span class="text-2xl">🏥</span>
+                                        </div>
+                                        <!-- Default Icon -->
+                                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4 bg-gray-100" 
+                                             th:unless="${zone.icon == 'home' or zone.icon == 'school' or zone.icon == 'work' or zone.icon == 'hospital'}">
+                                            <span class="text-2xl">📍</span>
                                         </div>
                                         <div>
                                             <h3 class="font-semibold text-gray-900 text-lg" th:text="${zone.name}">Nazwa strefy</h3>

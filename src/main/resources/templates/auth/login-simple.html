@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Logowanie</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    Logowanie do systemu
+                </h2>
+                <p class="mt-2 text-center text-sm text-gray-600">
+                    Wprowadź numer telefonu, aby otrzymać kod OTP
+                </p>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="mt-8 space-y-6" id="loginForm">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="phone" class="sr-only">Numer telefonu</label>
+                        <input id="phone" 
+                               name="phone" 
+                               type="tel" 
+                               required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                               placeholder="+48123456789"
+                               pattern="^\+[1-9]\d{1,14}$">
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" 
+                            id="sendOtpBtn"
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                        Wyślij kod OTP
+                    </button>
+                </div>
+            </form>
+
+            <!-- OTP Form (hidden initially) -->
+            <form class="mt-8 space-y-6 hidden" id="otpForm">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="otp" class="sr-only">Kod OTP</label>
+                        <input id="otp" 
+                               name="otp" 
+                               type="text" 
+                               required 
+                               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" 
+                               placeholder="123456"
+                               pattern="^\d{6}$"
+                               maxlength="6">
+                    </div>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button type="button" 
+                            id="backBtn"
+                            class="flex-1 py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Wróć
+                    </button>
+                    <button type="submit" 
+                            id="verifyOtpBtn"
+                            class="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                        Zaloguj się
+                    </button>
+                </div>
+            </form>
+
+            <!-- Demo Users Info -->
+            <div class="mt-8 p-4 bg-blue-50 rounded-md">
+                <h3 class="text-sm font-medium text-blue-800 mb-2">Dane testowe:</h3>
+                <div class="text-xs text-blue-700 space-y-1">
+                    <div><strong>Admin:</strong> +48123456789</div>
+                    <div><strong>User:</strong> +48987654321</div>
+                    <div><strong>Viewer:</strong> +48555666777</div>
+                </div>
+                <div class="mt-3 p-3 bg-yellow-100 border border-yellow-300 rounded-md">
+                    <p class="text-xs text-yellow-800">
+                        <strong>Uwaga:</strong> Kod OTP będzie wyświetlony w konsoli aplikacji oraz w komunikacie na stronie.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="messageContainer" class="hidden">
+                <div id="messageContent" class="rounded-md p-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== LOGIN PAGE LOADED ===');
+            
+            const loginForm = document.getElementById('loginForm');
+            const otpForm = document.getElementById('otpForm');
+            const sendOtpBtn = document.getElementById('sendOtpBtn');
+            const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+            const backBtn = document.getElementById('backBtn');
+            const messageContainer = document.getElementById('messageContainer');
+            const messageContent = document.getElementById('messageContent');
+            let currentPhone = '';
+
+            console.log('Elements found:', {
+                loginForm: !!loginForm,
+                otpForm: !!otpForm,
+                sendOtpBtn: !!sendOtpBtn,
+                verifyOtpBtn: !!verifyOtpBtn,
+                backBtn: !!backBtn,
+                messageContainer: !!messageContainer,
+                messageContent: !!messageContent
+            });
+
+            function showMessage(message, isError = false) {
+                console.log('Showing message:', message);
+                messageContent.innerHTML = message.replace(/\n/g, '<br>');
+                messageContent.className = `rounded-md p-4 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
+                messageContainer.classList.remove('hidden');
+                
+                // Show success messages longer
+                const timeout = isError ? 5000 : 10000;
+                setTimeout(() => {
+                    messageContainer.classList.add('hidden');
+                }, timeout);
+            }
+
+            function setLoading(button, isLoading) {
+                button.disabled = isLoading;
+                button.textContent = isLoading ? 'Ładowanie...' : (button.id === 'sendOtpBtn' ? 'Wyślij kod OTP' : 'Zaloguj się');
+            }
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('=== FORM SUBMITTED ===');
+                const phone = document.getElementById('phone').value;
+                console.log('Phone number:', phone);
+                currentPhone = phone;
+                
+                setLoading(sendOtpBtn, true);
+                
+                try {
+                    console.log('Sending request to /auth/send-otp');
+                    const response = await fetch('/auth/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ phone: phone })
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    const data = await response.json();
+                    console.log('Response data:', data);
+                    
+                    if (response.ok) {
+                        showMessage(`✅ Kod OTP został wysłany!\n\n🔑 Twój kod: ${data.otp}\n\n⏰ Kod wygasa za 5 minut`, false);
+                        loginForm.classList.add('hidden');
+                        otpForm.classList.remove('hidden');
+                    } else {
+                        showMessage(data.error || 'Błąd podczas wysyłania kodu OTP', true);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage('Błąd połączenia', true);
+                } finally {
+                    setLoading(sendOtpBtn, false);
+                }
+            });
+
+            otpForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('=== OTP FORM SUBMITTED ===');
+                const otp = document.getElementById('otp').value;
+                console.log('OTP entered:', otp);
+                
+                setLoading(verifyOtpBtn, true);
+                
+                try {
+                    const response = await fetch('/auth/verify-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ phone: currentPhone, otp: otp })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('OTP verification response:', data);
+                    
+                    if (data.success) {
+                        showMessage('Logowanie pomyślne! Przekierowywanie...', false);
+                        setTimeout(() => {
+                            window.location.href = data.redirectUrl;
+                        }, 1000);
+                    } else {
+                        showMessage(data.error || 'Nieprawidłowy kod OTP', true);
+                    }
+                } catch (error) {
+                    console.error('OTP verification error:', error);
+                    showMessage('Błąd połączenia', true);
+                } finally {
+                    setLoading(verifyOtpBtn, false);
+                }
+            });
+
+            backBtn.addEventListener('click', function() {
+                console.log('Back button clicked');
+                otpForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                document.getElementById('otp').value = '';
+            });
+        });
+    </script>
+</body>
+</html>

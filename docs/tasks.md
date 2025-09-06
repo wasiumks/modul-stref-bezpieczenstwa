@@ -8,10 +8,10 @@
 - [x] **Frontend Setup**
   - [x] Configure Thymeleaf templates
   - [x] Integrate Tailwind CSS for styling
-  - [ ] Setup base layout (header, navigation, container, footer)
+  - [x] Setup base layout (header, navigation, container, footer)
 - [x] **Internationalization**
   - [x] Add message bundles: `messages_pl.properties`, `messages_en.properties`, `messages_de.properties`
-  - [ ] Configure locale resolver & interceptor in Spring Boot
+  - [x] Configure locale resolver & interceptor in Spring Boot
 
 ---
 

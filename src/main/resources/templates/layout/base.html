@@ -25,13 +25,13 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
-                        <span th:text="${backText}">Wstecz</span>
+                        <span th:text="${backText ?: #{back}}">Wstecz</span>
                     </a>
                 </div>
                 
                 <!-- Page Title -->
                 <div class="flex-1 text-center">
-                    <h1 class="text-lg font-semibold text-gray-900" th:text="${pageTitle}">Strefy</h1>
+                    <h1 class="text-lg font-semibold text-gray-900" th:text="${pageTitle ?: #{zones}}">Strefy</h1>
                 </div>
                 
                 <!-- Right Side Actions -->

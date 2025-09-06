@@ -20,8 +20,10 @@ public class UserApiController {
     public ResponseEntity<UserPermissionsDto> getUserPermissions(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
-            log.warn("GET /api/user/permissions - No user in session");
-            return ResponseEntity.status(401).build();
+            log.info("GET /api/user/permissions - No user in session, returning default permissions");
+            // Return default permissions for unauthenticated users
+            UserPermissionsDto defaultPermissions = new UserPermissionsDto("GUEST", null);
+            return ResponseEntity.ok(defaultPermissions);
         }
         
         log.info("GET /api/user/permissions - Fetching permissions for user: {}", user.getPhone());

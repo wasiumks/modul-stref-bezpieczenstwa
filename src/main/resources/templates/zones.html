@@ -70,25 +70,69 @@
                         </div>
                     </div>
                     
-                    <!-- Empty State -->
+                    <!-- Onboarding Empty State -->
                     <div th:unless="${hasZones}" class="p-12 text-center">
-                        <div class="max-w-md mx-auto">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
+                        <div class="max-w-2xl mx-auto">
+                            <!-- Main Title -->
+                            <h2 class="text-3xl font-bold text-gray-900 mb-4">Strefy Bezpieczeństwa</h2>
+                            
+                            <!-- Intro Text -->
+                            <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
+                                Stwórz strefy bezpieczeństwa dla swoich bliskich. Otrzymuj powiadomienia, gdy członkowie rodziny wchodzą lub wychodzą z określonych miejsc.
+                            </p>
+                            
+                            <!-- Example Icons -->
+                            <div class="flex justify-center items-center space-x-8 mb-8">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-2">
+                                        <span class="text-3xl">🏠</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Dom</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-2">
+                                        <span class="text-3xl">🏫</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Szkoła</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-2">
+                                        <span class="text-3xl">🏢</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Praca</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mb-2">
+                                        <span class="text-3xl">🏥</span>
+                                    </div>
+                                    <span class="text-sm text-gray-600">Szpital</span>
+                                </div>
                             </div>
-                            <h3 class="text-lg font-medium text-gray-900 mb-2">Brak stref bezpieczeństwa</h3>
-                            <p class="text-gray-500 mb-6">Dodaj pierwszą strefę, aby rozpocząć zarządzanie bezpieczeństwem swojej rodziny.</p>
-                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200">
+                            
+                            <!-- Call to Action -->
+                            <button onclick="startZoneWizard()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
                                 + Dodaj pierwszą strefę
                             </button>
+                            
+                            <!-- Additional Info -->
+                            <p class="text-sm text-gray-500 mt-6">
+                                Kliknij przycisk powyżej, aby rozpocząć kreator tworzenia strefy bezpieczeństwa
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
+    <script>
+        // Start zone creation wizard
+        function startZoneWizard() {
+            // For now, show an alert - this will be replaced with actual wizard in Phase 5.3
+            alert('Kreator tworzenia strefy będzie dostępny w następnej fazie rozwoju!');
+        }
+    </script>
 </body>
 </html>

@@ -25,25 +25,9 @@ public class ZonesController {
             System.out.println("No user in session, redirecting to login");
             return "redirect:/auth/login";
         }
-        // Mock data for zones - this will be replaced with actual service calls later
-        List<Map<String, Object>> zones = List.of(
-                Map.of(
-                        "id", 1,
-                        "name", "Dom",
-                        "address", "ul. Przykładowa 123, Warszawa",
-                        "icon", "home",
-                        "devicesCount", 2,
-                        "radius", 500
-                ),
-                Map.of(
-                        "id", 2,
-                        "name", "Szkoła",
-                        "address", "ul. Szkolna 45, Warszawa",
-                        "icon", "school",
-                        "devicesCount", 1,
-                        "radius", 300
-                )
-        );
+        
+        // For Phase 5.1 - Start with empty state to demonstrate onboarding
+        List<Map<String, Object>> zones = List.of(); // Empty list for onboarding
 
         model.addAttribute("pageTitle", "Strefy Bezpieczeństwa");
         model.addAttribute("pageDescription", "Zarządzaj strefami bezpieczeństwa dla swoich bliskich");
@@ -51,6 +35,6 @@ public class ZonesController {
         model.addAttribute("hasZones", !zones.isEmpty());
         model.addAttribute("user", user);
 
-        return "zones-simple";
+        return "zones";
     }
 }

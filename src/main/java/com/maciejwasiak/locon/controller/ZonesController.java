@@ -67,7 +67,7 @@ public class ZonesController {
         model.addAttribute("user", user);
         model.addAttribute("showDeletedMessage", "true".equals(deleted));
 
-        return "zones";
+        return "zones-simple";
     }
 
     @GetMapping("/zones/wizard")

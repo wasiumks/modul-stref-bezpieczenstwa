@@ -37,9 +37,9 @@
                                 <div class="flex items-start justify-between mb-4">
                                     <div class="flex items-center">
                                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center mr-4"
-                                             th:class="${zone.icon == 'home'} ? 'bg-blue-100' : 
-                                                      ${zone.icon == 'school'} ? 'bg-green-100' : 
-                                                      ${zone.icon == 'work'} ? 'bg-purple-100' : 'bg-orange-100'">
+                                             th:classappend="${zone.icon == 'home'} ? 'bg-blue-100' : 
+                                                           ${zone.icon == 'school'} ? 'bg-green-100' : 
+                                                           ${zone.icon == 'work'} ? 'bg-purple-100' : 'bg-orange-100'">
                                             <span class="text-2xl" 
                                                   th:text="${zone.icon == 'home'} ? '🏠' : 
                                                           ${zone.icon == 'school'} ? '🏫' : 

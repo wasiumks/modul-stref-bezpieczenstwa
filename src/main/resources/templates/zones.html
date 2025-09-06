@@ -186,8 +186,11 @@
 
     <!-- Scripts -->
     <script>
+        console.log('Zones script loaded');
+        
         // Start zone creation wizard
         function startZoneWizard() {
+            console.log('startZoneWizard called');
             window.location.href = '/zones/wizard?step=0';
         }
         

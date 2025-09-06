@@ -297,3 +297,6 @@ node_modules/
 
 # Cursor AI
 .cursor/
+
+docs/Locon_zadanie.pdf
+docs/UX.txt

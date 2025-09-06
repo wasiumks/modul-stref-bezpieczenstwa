@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${pageTitle} + ' - Strefy Bezpieczeństwa'">Strefy Bezpieczeństwa</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <!-- Zones-specific content container -->
+        <div class="space-y-6">
+            <!-- Page Description -->
+            <div th:if="${pageDescription}" class="text-center">
+                <p class="text-gray-600 text-sm" th:text="${pageDescription}">Opis strony</p>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div layout:fragment="zones-content">
+                    <!-- Zones content goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

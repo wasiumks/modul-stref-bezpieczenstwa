@@ -1,17 +1,17 @@
 # Development Tasks – Safe Zones Module (*Bezpieczna Rodzina*)
 
 ## Phase 1 – Project Setup
-- [ ] **Backend Setup (Spring Boot + MySQL)**
-  - Initialize Spring Boot project (Maven/Gradle)
-  - Configure MySQL connection (`application.yml`)
-  - Add dependencies: Spring Web, Spring Data JPA, Spring Security, Validation, Lombok, Thymeleaf
-- [ ] **Frontend Setup**
-  - Configure Thymeleaf templates
-  - Integrate Tailwind CSS for styling
-  - Setup base layout (header, navigation, container, footer)
-- [ ] **Internationalization**
-  - Add message bundles: `messages_pl.properties`, `messages_en.properties`, `messages_de.properties`
-  - Configure locale resolver & interceptor in Spring Boot
+- [x] **Backend Setup (Spring Boot + MySQL)**
+  - [x] Initialize Spring Boot project (Maven/Gradle)
+  - [x] Configure MySQL connection (`application.properties`)
+  - [x] Add dependencies: Spring Web, Spring Data JPA, Spring Security, Validation, Lombok, Thymeleaf
+- [x] **Frontend Setup**
+  - [x] Configure Thymeleaf templates
+  - [x] Integrate Tailwind CSS for styling
+  - [ ] Setup base layout (header, navigation, container, footer)
+- [x] **Internationalization**
+  - [x] Add message bundles: `messages_pl.properties`, `messages_en.properties`, `messages_de.properties`
+  - [ ] Configure locale resolver & interceptor in Spring Boot
 
 ---
 

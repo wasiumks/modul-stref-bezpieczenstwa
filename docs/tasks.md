@@ -5,6 +5,7 @@
 - **Phase 2**: ✅ COMPLETED - Authentication & Permissions with comprehensive testing
 - **Phase 3**: ✅ COMPLETED - Database Schema (MySQL)
 - **Phase 4**: ✅ COMPLETED - Backend APIs (with Mocks)
+- **Phase 5**: ✅ COMPLETED - Frontend Views (Thymeleaf + Tailwind)
 - **Total Tests**: 73 tests (100% passing)
 - **Test Coverage**: Unit tests, Integration tests, Repository tests, Controller tests
 
@@ -70,43 +71,43 @@
 
 ---
 
-## Phase 5 – Frontend Views (Thymeleaf + Tailwind)
-### 5.1 Onboarding View (Empty State)
-- [ ] Implement **Empty State Page**:
+## Phase 5 – Frontend Views (Thymeleaf + Tailwind) ✅ COMPLETED
+### 5.1 Onboarding View (Empty State) ✅
+- [x] Implement **Empty State Page**:
   - Title: *Safe Zones*
   - Intro text explaining what zones are
   - Example icons: Home, School
-  - Button: **“Add first zone”** → goes to Wizard Step 1
+  - Button: **"Add first zone"** → goes to Wizard Step 1
 
-### 5.2 Zones List View
-- [ ] Implement **Zones List Page**:
+### 5.2 Zones List View ✅
+- [x] Implement **Zones List Page**:
   - Display list of existing zones in cards
   - Show zone name, address, devices assigned
-  - Button: **“+ Add zone”**
+  - Button: **"+ Add zone"**
   - Empty state handled when no zones
 
-### 5.3 Zone Creation Wizard
-- [ ] **Step 1 – Zone Name & Icon**
+### 5.3 Zone Creation Wizard ✅
+- [x] **Step 1 – Zone Name & Icon**
   - Input field for zone name
   - Grid of selectable icons
   - Button: **Next**
-- [ ] **Step 2 – Location**
+- [x] **Step 2 – Location**
   - Input for address
   - Embedded Google Maps with draggable marker
   - Button: **Next**
-- [ ] **Step 3 – Radius**
+- [x] **Step 3 – Radius**
   - Show map preview with circle overlay
   - Slider (100–5000m) + +/- buttons
   - Display current radius value
   - Button: **Next**
-- [ ] **Step 4 – Notifications**
-  - List user’s devices with toggle switches
+- [x] **Step 4 – Notifications**
+  - List user's devices with toggle switches
   - Enable/disable notifications per device
   - Button: **Save**
 
-### 5.4 Success Screen
-- [ ] Implement **Zone Created Screen**:
-  - Confirmation message: *“Zone successfully created!”*
+### 5.4 Success Screen ✅
+- [x] Implement **Zone Created Screen**:
+  - Confirmation message: *"Zone successfully created!"*
   - Buttons: **Go to zones**, **Add another**
 
 ---

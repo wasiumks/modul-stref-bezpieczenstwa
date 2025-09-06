@@ -1,0 +1,79 @@
+PRD: Moduł Stref Bezpieczeństwa aplikacji Bezpieczna Rodzina
+
+1. Opis modułu i kontekst w aplikacji
+
+Moduł Stref Bezpieczeństwa jest częścią aplikacji Bezpieczna Rodzina, służącej do monitorowania lokalizacji członków rodziny i automatycznego powiadamiania o ich wejściu lub wyjściu ze zdefiniowanych obszarów (geofencing) ￼ ￼. Aplikacja ta umożliwia lokalizowanie dzieci, seniorów i innych bliskich za pomocą telefonów komórkowych oraz urządzeń wearable (np. zegarków dziecięcych, opasek seniorskich) ￼. System zawiera także funkcje jak uwierzytelnianie (logowanie OTP), główny interfejs mapowy oraz zarządzanie urządzeniami rodzinnymi ￼ ￼. Moduł stref bezpieczeństwa rozszerza bazową funkcjonalność o definiowanie obszarów (np. dom, szkoła) oraz automatyczne alerty przy wchodzeniu/opuszczaniu tych obszarów.
+
+2. Zakres funkcjonalny modułu
+	•	Lista stref: Przegląd wszystkich stref bezpieczeństwa z opcją tworzenia nowej. System obsługuje stan pusty (brak stref) z zachętą do dodania pierwszej strefy, oraz stan z już istniejącymi strefami, wyświetlając nazwę, ikonę, adres oraz przypisane urządzenia ￼ ￼.
+	•	Kreator dodawania strefy (wieloetapowy): Czterostopniowy proces tworzenia strefy:
+	1.	Nazwa i ikona: Nadanie nazwy strefie oraz wybór ikony (np. dom, szkoła) ￼ ￼.
+	2.	Lokalizacja: Określenie lokalizacji poprzez wpisanie adresu lub przesunięcie znacznika na mapie (Google Maps) ￼ ￼.
+	3.	Promień strefy: Ustalenie promienia w metrach (zakres 100–5000 m) za pomocą gestu lub przycisków (+/-), z podglądem mapy ￼ ￼.
+	4.	Powiadomienia: Wybór urządzeń, dla których będą wysyłane powiadomienia o wejściu/wyjściu ze strefy (lista urządzeń z przełącznikiem włącz/wyłącz) ￼ ￼.
+Po zakończeniu kreatora wyświetlany jest ekran sukcesu potwierdzający utworzenie strefy oraz oferujący przejście do listy stref lub dodanie kolejnej ￼.
+	•	Zarządzanie strefą: Edycja i usuwanie istniejących stref. Użytkownik może zmienić parametry strefy (nazwę, lokalizację, promień), usunąć strefę lub włączać/wyłączać powiadomienia dla każdej strefy indywidualnie ￼.
+	•	System uprawnień: Role użytkowników z różnymi poziomami dostępu:
+	•	Admin: Pełny dostęp do wszystkich funkcji i urządzeń oraz zarządzanie uprawnieniami innych użytkowników ￼.
+	•	User Standard: Pełne prawa do obsługi wybranych urządzeń.
+	•	User Viewer: Dostęp tylko do odczytu danych, ograniczony do wybranych ekranów ￼.
+	•	Interfejs adaptacyjny: UI dynamicznie dostosowuje się do kontekstu dodanych urządzeń. Pierwszy dodany typ urządzenia definiuje domyślną kolorystykę aplikacji, a kolejne typy wprowadzają dodatkowe sekcje menu. Układ i proporcje elementów pozostają spójne pomimo zmiany kontekstu ￼.
+	•	System wielojęzyczny (i18n): Obsługa wielu języków dzięki dynamicznemu ładowaniu pakietów językowych. Wszystkie teksty interfejsu są przygotowane do lokalizacji, co umożliwia dostosowanie aplikacji do różnych rynków geograficznych ￼ ￼.
+
+3. Szczegółowy opis UX (według mockupów)
+	1.	Ekran wprowadzający (Onboarding stref – stan pusty): Pokazuje wyjaśnienie celu stref bezpieczeństwa („Otrzymuj automatyczne powiadomienia gdy Twoi bliscy wejdą lub wyjdą z ważnych miejsc”), z grafiką ikon domyślnych stref (dom, szkoła) ￼. Na dole znajduje się przycisk „Dodaj pierwszą strefę”, który przenosi do kreatora.
+	2.	Lista stref (z istniejącymi strefami): Nagłówek „Strefy” i krótki opis zachęcający do dodania strefy. Wyświetlone są karty stref z ikoną, nazwą (np. „Dom – Rodzinne SOS”), adresem, kodem strefy oraz liczbą przypisanych urządzeń (np. telefon, zegarek) ￼. Każda karta jest przyciskiem prowadzącym do szczegółowego zarządzania strefą. Na dole listy znajduje się przycisk „+ Dodaj strefę” ￼.
+	3.	Kreator strefy – Krok 1 (Nazwa strefy): Nagłówek „Dodaj strefę” z przyciskiem wstecz („←”). Pasek postępu pokazuje „Krok 1 z 4”. Formularz zawiera pole tekstowe do wpisania nazwy strefy z placeholderem „Wpisz nazwę” oraz sekcję wyboru ikony (lista ikon typu Material/SF Symbols) ￼ ￼. Przyciski: „Dalej” aktywne po wprowadzeniu nazwy i wyborze ikony.
+	4.	Kreator strefy – Krok 2 (Lokalizacja): Nagłówek „Krok 2 z 4”. Użytkownik może wpisać adres w polu tekstowym lub ręcznie przesunąć znacznik na wbudowanej mapie Google (podgląd mapy). Instrukcja zachęca do przesunięcia markera lub wpisania adresu ￼ ￼. Przyciski: „Dalej” (przechodzi dalej po wybraniu lokalizacji).
+	5.	Kreator strefy – Krok 3 (Promień strefy): Nagłówek „Krok 3 z 4”. Pod mapą widoczny jest suwak i wyświetlana wartość promienia w metrach (np. „250 m”). Użytkownik może zmienić promień gestem lub przyciskami (+/-), w zakresie 100–5000 m ￼ ￼. Podsumowanie promienia z informacją o maksymalnej wartości. Przycisk „Dalej” do kontynuacji.
+	6.	Kreator strefy – Krok 4 (Powiadomienia): Nagłówek „Krok 4 z 4”. Lista urządzeń przypisanych do konta (np. telefon „Rodzinne SOS – Anna (córka)”, zegarek „GJD.13 – Tomek (syn)”, opaska „BS.07 – Babcia (senior)”) z przełącznikami „Włącz powiadomienia” dla każdego urządzenia ￼ ￼. Wskazówka informuje, że włączenie powoduje otrzymywanie alertów o wejściu i wyjściu. Na dole przycisk „Zapisz” finalizuje tworzenie.
+	7.	Ekran sukcesu: Nagłówek „Dodaj strefę” z potwierdzeniem „Strefa została utworzona!” oraz podziękowaniem („Dzięki ustawieniu strefy zawsze otrzymasz automatyczny alert…”). Dwa przyciski: „Przejdź do stref” oraz „Dodaj kolejną” ￼.
+
+Każdy ekran zawiera spójny layout (nagłówek, tytuł, treść, przyciski) oraz elementy nawigacyjne (np. przycisk wstecz, pasek postępu) zgodnie z dostarczonymi mockupami ￼ ￼.
+
+4. Wymagania projektowe i design system
+	•	Kolorystyka i typografia: Główny kolor systemu to niebieski #2C5282, kolory akcentowe to zielony #50C878 i czerwony #FF6B6B. Tło aplikacji powinno być jasnoszare (#F5F5F5), a teksty w odcieniach szarości (#333333 dla tekstu głównego, #666666 dla tekstu pomocniczego) ￼. Karty mają zaokrąglone rogi 12px, przyciski 8px ￼. Jako font systemowy stosować domyślny font systemowy (-apple-system, Roboto) ￼. Ikony w stylu Material Design / SF Symbols ￼.
+	•	Theming: System powinien wspierać dynamiczną zmianę kolorów („theming”). Wszystkie kolory UI muszą być definiowalne w systemie motywów. Komponenty powinny przyjmować kolory z zdefiniowanych motywów przy zachowaniu spójnego layoutu i proporcji ￼.
+	•	Komponenty UI: Na podstawie mockupów wymagane są m.in.: zaokrąglone przyciski, karty z cieniem, paski postępu (progress bar) dla kreatora, przełączniki typu toggle dla powiadomień, pola tekstowe z etykietami pływającymi (floating labels) oraz dolne arkusze akcji (bottom sheets) ￼. Wszystkie komponenty muszą być parametryzowane i stylowane za pomocą Tailwind CSS z możliwością dostosowania kolorów. Konsystencja wizualna musi być zachowana niezależnie od wybranego motywu kolorystycznego ￼ ￼.
+
+5. Wymagania techniczne
+	•	Backend (Java Spring): Serwer REST API zbudowany w Spring Boot. Baza danych relacyjna (np. PostgreSQL) do przechowywania stref i urządzeń. Architektura warstwowa (kontrolery, serwisy, repozytoria) z wstrzykiwaniem zależności (Spring DI) ￼. Zapewnić uwierzytelnianie użytkowników (OTP) i autoryzację RBAC zgodnie z rolami (Admin/Standard/Viewer) ￼. Walidacja danych wejściowych (formularze, parametry zapytań) powinna być realizowana zarówno po stronie klienta (JS) jak i serwera (Spring Validation).
+	•	Frontend (Thymeleaf + Tailwind): Widoki w Thymeleaf z wykorzystaniem Tailwind CSS do stylowania. Interfejs powinien być responsywny (mobile-first) i adaptować się do różnych rozmiarów ekranów. Implementacja wielojęzyczności (i18n) – wszystkie widoki i wiadomości użytkownika powinny korzystać z pakietów językowych (np. pl.properties, en.properties) oraz dynamicznej zmiany języka na podstawie preferencji użytkownika ￼.
+	•	Integracje: Wykorzystać Google Maps (lub OpenStreetMap) do wybierania lokalizacji i wizualizacji strefy. Geolokalizacja i geofencing – ustalenie, czy użytkownik wszedł/opuścił strefę, może być realizowane np. poprzez obliczanie odległości geograficznej na serwerze po otrzymaniu współrzędnych urządzeń. Lokalizowanie członków rodziny wymaga pobierania ich pozycji (symulowanych z mocków) i sprawdzania warunków geofencing.
+	•	Powiadomienia: Ponieważ docelowo to aplikacja mobilna, należy planować integrację z lokalnymi powiadomieniami push (mobile push notifications). W kontekście webowym można zastosować Powiadomienia przeglądarkowe (Web Push) lub mechanizmy symulujące powiadomienia lokalne.
+	•	Theming i adaptacyjny UI: Tailwind ma wspierać motywy (np. użycie CSS variables lub Tailwind Theme Extension) pozwalające na dynamiczną zmianę kolorów motywu. UI musi dostosowywać strukturę menu/sekcji do dodanych typów urządzeń (np. ukrywać sekcje nieistotne dla danego użytkownika) ￼.
+	•	Role-based access: Interfejs powinien pokazywać lub ukrywać funkcje zależnie od roli użytkownika i uprawnień otrzymanych z endpointu /api/user/permissions ￼.
+	•	Architektura dodatkowa: Można zastosować wzorce projektowe analogiczne do MVVM/MVI (np. użycie dedykowanych serwisów, obserwowalne dane, wzorce CQRS) ￼. Wykorzystanie programowania reaktywnego (np. Reactor, RxJava) jest opcjonalne. W projekcie należy zastosować dobre praktyki czystej architektury (moduły, testowalność, separacja warstw).
+
+6. Wymagania dotyczące współpracy z AI
+
+Oczekuje się wykorzystania narzędzi AI (np. GitHub Copilot, ChatGPT) w następujących obszarach:
+	•	Generowanie kodu: Automatyczne tworzenie szkieletów kodu, komponentów UI, klas serwisów i kontrolerów zgodnie ze wzorcami architektonicznymi ￼.
+	•	Refaktoryzacja i optymalizacja: Analiza jakości kodu, sugestie ulepszeń, automatyczne formatowanie i wprowadzanie poprawek wydajnościowych ￼.
+	•	Rozwiązywanie problemów: Wsparcie w debugowaniu błędów, poszukiwanie rozwiązań dla napotkanych wyzwań technicznych, korzystanie z AI jako „doradcy” przy implementacji najlepszych praktyk ￼.
+	•	Testowanie: Generowanie przypadków testowych (unit testy, integracyjne), scenariuszy testowych oraz danych testowych/makiet (mock data) dzięki narzędziom AI ￼.
+	•	Dokumentacja: Automatyczne tworzenie komentarzy w kodzie, uzupełnianie dokumentacji (README, opisy API) oraz generowanie diagramów architektury za pomocą AI ￼ ￼.
+
+7. Endpointy API do zamockowania (przykładowe dane)
+
+Metoda	Endpoint	Opis	Przykładowe dane (JSON)
+GET	/api/zones	Pobranie listy wszystkich stref użytkownika ￼.	json<br>[<br> {"id":1,"name":"Dom","address":"ul. Przykładowa 1","radius":500,"devices":[123456,789012]},<br> {"id":2,"name":"Szkoła","address":"ul. Szkolna 15","radius":300,"devices":[789012]}<br>]
+POST	/api/zones	Utworzenie nowej strefy. W ciele: nazwa, lokalizacja (lat,lng), promień, lista urządzeń do powiadomień.	Request: json<br>{"name":"Praca","lat":52.23,"lng":21.01,"radius":400,"devices":[123456,345678]}
+PUT	/api/zones/{id}	Edycja istniejącej strefy o danym id. Podobne pola jak przy tworzeniu.	Request: json<br>{"name":"Praca - biuro","lat":52.23,"lng":21.02,"radius":450,"devices":[123456]}
+DELETE	/api/zones/{id}	Usunięcie strefy o danym id ￼.	– (pusty ciało żądania, zwrot 204 No Content)
+GET	/api/devices	Pobranie listy urządzeń przypisanych do użytkownika ￼.	json<br>[<br> {"id":123456,"type":"phone","model":"Rodzinne SOS","user":"Anna"},<br> {"id":789012,"type":"watch","model":"GJD.13","user":"Tomek"},<br> {"id":345678,"type":"band","model":"BS.07","user":"Babcia"}<br>]
+GET	/api/user/permissions	Pobranie informacji o uprawnieniach zalogowanego użytkownika ￼.	json<br>{"role":"Admin"} // lub "User", "Viewer"
+GET	/api/themes/{operator}	Pobranie schematu kolorów (motywu) dla danego operatora/organizacji ￼.	json<br>{"primary":"#2C5282","accent":"#50C878","error":"#FF6B6B","background":"#F5F5F5"} 
+GET	/api/i18n/{lang}	Pobranie pakietu tłumaczeń dla języka (pl, en, de) ￼.	json<br>{"zonesTitle":"Strefy","addZone":"Dodaj strefę","...":...}
+
+Przykładowe dane uwzględniają sytuację z 2–3 urządzeniami różnych typów (telefon, zegarek, opaska) oraz 1–2 istniejącymi strefami („Dom”, „Szkoła”) ￼. Role użytkowników mogą być testowane jako „Admin”, „User Standard”, „Viewer” ￼.
+
+8. Wymagania dotyczące dokumentacji projektu i rezultatów końcowych
+	•	Kod źródłowy: Działająca aplikacja (frontend + backend) umieszczona w publicznym repozytorium (np. GitHub) ￼. Kod powinien być czysty, dobrze zorganizowany i zgodny z dobrymi praktykami branżowymi. Komentarze w kodzie powinny wyjaśniać kluczowe fragmenty (wspomagane AI-generated docstrings gdzie możliwe) ￼ ￼.
+	•	README: Plik README.md z instrukcją uruchomienia projektu (build, konfiguracja środowiska, sposób uruchomienia backendu i serwera frontendu) ￼.
+	•	Opis architektury: Dokument opisujący zastosowaną architekturę (warstwy aplikacji, użyte biblioteki/frameworki, schemat bazy danych) oraz uzasadnienia decyzji technicznych ￼.
+	•	Wykorzystanie AI: Lista użytych narzędzi AI (np. GitHub Copilot, ChatGPT), opis metodologii współpracy z AI (np. kiedy i jak AI pomagało) oraz przykłady konkretnych przypadków, w których AI przyczyniło się do rozwiązania problemu ￼.
+	•	Testy i walidacja: Zestaw testów jednostkowych/integracyjnych (np. JUnit, Mockito) wygenerowanych częściowo lub weryfikowanych przez AI. Dokumentacja wyników testów i lista scenariuszy testowych stworzonych przy udziale AI ￼.
+
+Każdy z powyższych punktów powinien być potwierdzony materiałem w repozytorium (kodem, dokumentacją). Końcowy efekt to kompletny moduł stref bezpieczeństwa z kodem źródłowym, pełną dokumentacją i przykładowym backendem/mockami umożliwiającymi demonstrację działania funkcji.
+

@@ -271,6 +271,7 @@
     <!-- Scripts -->
     <script>
         let selectedIcon = null;
+        let currentStep = ${currentStep};
         let wizardData = {
             name: '',
             icon: '',
@@ -281,6 +282,9 @@
 
         // Initialize wizard
         document.addEventListener('DOMContentLoaded', function() {
+            // Load saved data from localStorage
+            loadWizardData();
+            
             // Set up radius slider
             const radiusSlider = document.getElementById('radiusSlider');
             const radiusValue = document.getElementById('radiusValue');
@@ -290,9 +294,73 @@
                     radiusValue.textContent = this.value;
                     wizardData.radius = parseInt(this.value);
                     updateSummary();
+                    saveWizardData();
+                });
+            }
+            
+            // Set up input listeners
+            const zoneName = document.getElementById('zoneName');
+            if (zoneName) {
+                zoneName.addEventListener('input', function() {
+                    wizardData.name = this.value;
+                    saveWizardData();
+                });
+            }
+            
+            const zoneAddress = document.getElementById('zoneAddress');
+            if (zoneAddress) {
+                zoneAddress.addEventListener('input', function() {
+                    wizardData.address = this.value;
+                    saveWizardData();
                 });
             }
         });
+        
+        // Save wizard data to localStorage
+        function saveWizardData() {
+            localStorage.setItem('wizardData', JSON.stringify(wizardData));
+        }
+        
+        // Load wizard data from localStorage
+        function loadWizardData() {
+            const saved = localStorage.getItem('wizardData');
+            if (saved) {
+                wizardData = { ...wizardData, ...JSON.parse(saved) };
+                
+                // Populate form fields
+                const zoneName = document.getElementById('zoneName');
+                if (zoneName && wizardData.name) {
+                    zoneName.value = wizardData.name;
+                }
+                
+                const zoneAddress = document.getElementById('zoneAddress');
+                if (zoneAddress && wizardData.address) {
+                    zoneAddress.value = wizardData.address;
+                }
+                
+                const radiusSlider = document.getElementById('radiusSlider');
+                const radiusValue = document.getElementById('radiusValue');
+                if (radiusSlider && radiusValue && wizardData.radius) {
+                    radiusSlider.value = wizardData.radius;
+                    radiusValue.textContent = wizardData.radius;
+                }
+                
+                // Restore selected icon
+                if (wizardData.icon) {
+                    selectedIcon = { name: wizardData.icon };
+                    // Update visual selection
+                    document.querySelectorAll('.icon-option').forEach(option => {
+                        option.classList.remove('border-blue-500', 'bg-blue-50');
+                        option.classList.add('border-gray-200');
+                    });
+                    const selectedOption = document.querySelector(`[data-icon="${wizardData.icon}"]`);
+                    if (selectedOption) {
+                        selectedOption.classList.add('border-blue-500', 'bg-blue-50');
+                        selectedOption.classList.remove('border-gray-200');
+                    }
+                }
+            }
+        }
 
         // Icon selection
         function selectIcon(iconName, iconEmoji) {
@@ -309,6 +377,7 @@
             selectedIcon = { name: iconName, emoji: iconEmoji };
             wizardData.icon = iconName;
             updateSummary();
+            saveWizardData();
         }
 
         // Radius quick buttons
@@ -353,7 +422,6 @@
         function nextStep() {
             // Validate current step
             if (validateCurrentStep()) {
-                const currentStep = parseInt(document.querySelector('[data-current-step]')?.dataset.currentStep || '0');
                 const nextStep = currentStep + 1;
                 if (nextStep < 4) {
                     window.location.href = `/zones/wizard?step=${nextStep}`;
@@ -362,7 +430,6 @@
         }
 
         function previousStep() {
-            const currentStep = parseInt(document.querySelector('[data-current-step]')?.dataset.currentStep || '0');
             const prevStep = currentStep - 1;
             if (prevStep >= 0) {
                 window.location.href = `/zones/wizard?step=${prevStep}`;
@@ -371,6 +438,8 @@
 
         function cancelWizard() {
             if (confirm('Czy na pewno chcesz anulować tworzenie strefy? Wszystkie wprowadzone dane zostaną utracone.')) {
+                // Clear saved wizard data
+                localStorage.removeItem('wizardData');
                 window.location.href = '/zones';
             }
         }
@@ -424,6 +493,8 @@
             })
             .then(response => {
                 if (response.ok) {
+                    // Clear saved wizard data
+                    localStorage.removeItem('wizardData');
                     window.location.href = response.url;
                 } else {
                     alert('Wystąpił błąd podczas tworzenia strefy');
@@ -436,8 +507,39 @@
         }
 
         function validateCurrentStep() {
-            // Basic validation for current step
-            return true; // Placeholder
+            // Step 0: Zone Name & Icon validation
+            if (currentStep === 0) {
+                const zoneName = document.getElementById('zoneName');
+                if (!zoneName || !zoneName.value.trim()) {
+                    alert('Proszę wprowadzić nazwę strefy');
+                    return false;
+                }
+                if (!selectedIcon) {
+                    alert('Proszę wybrać ikonę strefy');
+                    return false;
+                }
+            }
+            
+            // Step 1: Location validation
+            if (currentStep === 1) {
+                const zoneAddress = document.getElementById('zoneAddress');
+                if (!zoneAddress || !zoneAddress.value.trim()) {
+                    alert('Proszę wprowadzić adres strefy');
+                    return false;
+                }
+            }
+            
+            // Step 2: Radius validation (always valid as it has default value)
+            if (currentStep === 2) {
+                return true;
+            }
+            
+            // Step 3: Notifications validation (always valid)
+            if (currentStep === 3) {
+                return true;
+            }
+            
+            return true;
         }
 
         // Update summary on input changes

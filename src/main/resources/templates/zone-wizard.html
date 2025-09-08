@@ -30,18 +30,21 @@
                                 </div>
                                 
                                 <!-- Step title -->
-                                <span th:if="${iterStat.index <= currentStep}" 
-                                      class="ml-2 text-sm font-medium text-gray-900" 
-                                      th:text="${step.title}">Krok</span>
-                                <span th:if="${iterStat.index > currentStep}" 
-                                      class="ml-2 text-sm font-medium text-gray-500" 
-                                      th:text="${step.title}">Krok</span>
+                                <span th:if="${iterStat.index <= currentStep}"
+                                      class="ml-2 text-sm font-medium text-gray-900"
+                                      th:text="${iterStat.index == 0} ? #{wizard_step1_title} : (${iterStat.index == 1} ? #{wizard_step2_title} : (${iterStat.index == 2} ? #{wizard_step3_title} : #{wizard_step4_title}))">Krok</span>
+                                <span th:if="${iterStat.index > currentStep}"
+                                      class="ml-2 text-sm font-medium text-gray-500"
+                                      th:text="${iterStat.index == 0} ? #{wizard_step1_title} : (${iterStat.index == 1} ? #{wizard_step2_title} : (${iterStat.index == 2} ? #{wizard_step3_title} : #{wizard_step4_title}))">Krok</span>
                             </div>
                             <div th:if="${!iterStat.last}" class="w-8 h-0.5 bg-gray-200 mx-2"></div>
                         </div>
                     </div>
                     <div class="text-sm text-gray-500">
-                        Krok <span th:text="${currentStep + 1}">1</span> z <span th:text="${wizardSteps.size()}">4</span>
+                        <span th:if="${currentStep} == 0" th:text="#{step_1_of_4}">Krok 1 z 4</span>
+                        <span th:if="${currentStep} == 1" th:text="#{step_2_of_4}">Krok 2 z 4</span>
+                        <span th:if="${currentStep} == 2" th:text="#{step_3_of_4}">Krok 3 z 4</span>
+                        <span th:if="${currentStep} == 3" th:text="#{step_4_of_4}">Krok 4 z 4</span>
                     </div>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
@@ -66,23 +69,23 @@
                     <!-- Step 1: Zone Name & Icon -->
                     <div th:if="${currentStep == 0}" class="space-y-6">
                         <div class="text-center mb-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Nazwa i ikona strefy</h2>
-                            <p class="text-gray-600">Wybierz nazwę i ikonę dla swojej strefy bezpieczeństwa</p>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2" th:text="#{wizard_step1_title}">Nazwa i ikona strefy</h2>
+                            <p class="text-gray-600" th:text="#{wizard_step1_desc}">Wybierz nazwę i ikonę dla swojej strefy bezpieczeństwa</p>
                         </div>
                         
                         <!-- Zone Name Input -->
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">Nazwa strefy</label>
+                            <label class="block text-sm font-medium text-gray-700" th:text="#{zone_name}">Nazwa strefy</label>
                             <input type="text" 
                                    id="zoneName" 
-                                   placeholder="np. Dom, Szkoła, Praca..."
+                                   th:placeholder="#{zone_name_placeholder}"
                                    th:value="${existingZone?.name}"
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         
                         <!-- Icon Selection -->
                         <div class="space-y-3">
-                            <label class="block text-sm font-medium text-gray-700">Wybierz ikonę</label>
+                            <label class="block text-sm font-medium text-gray-700" th:text="#{choose_icon}">Wybierz ikonę</label>
                             <div class="grid grid-cols-4 gap-4">
                                 <div th:each="icon : ${availableIcons}" 
                                      class="icon-option cursor-pointer p-4 border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors duration-200"
@@ -90,7 +93,7 @@
                                      th:data-emoji="${icon.emoji}"
                                      onclick="selectIconFromElement(this)">
                                     <div class="text-3xl mb-2" th:text="${icon.emoji}">🏠</div>
-                                    <div class="text-sm text-gray-600" th:text="${icon.label}">Dom</div>
+                                    <div class="text-sm text-gray-600" th:text="${#messages.msg('icon_' + icon.name)}">Dom</div>
                                 </div>
                             </div>
                         </div>
@@ -99,30 +102,30 @@
                     <!-- Step 2: Location -->
                     <div th:if="${currentStep == 1}" class="space-y-6">
                         <div class="text-center mb-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Lokalizacja strefy</h2>
-                            <p class="text-gray-600">Wprowadź adres lub wybierz lokalizację na mapie</p>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2" th:text="#{wizard_step2_title}">Lokalizacja strefy</h2>
+                            <p class="text-gray-600" th:text="#{wizard_step2_desc}">Wprowadź adres lub wybierz lokalizację na mapie</p>
                         </div>
                         
                         <!-- Address Input -->
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">Adres</label>
+                            <label class="block text-sm font-medium text-gray-700" th:text="#{zone_address}">Adres</label>
                             <input type="text" 
                                    id="zoneAddress" 
-                                   placeholder="np. ul. Przykładowa 123, Warszawa"
+                                   th:placeholder="#{zone_address_placeholder}"
                                    th:value="${existingZone?.address}"
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         
                         <!-- Map Placeholder -->
                         <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">Mapa</label>
+                            <label class="block text-sm font-medium text-gray-700" th:text="#{set_location}">Mapa</label>
                             <div class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                                 <div class="text-center">
                                     <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
-                                    <p class="text-gray-500">Mapa będzie dostępna w następnej fazie rozwoju</p>
+                                    <p class="text-gray-500" th:text="#{set_zone_area}">Mapa będzie dostępna w następnej fazie rozwoju</p>
                                 </div>
                             </div>
                         </div>
@@ -131,8 +134,8 @@
                     <!-- Step 3: Radius -->
                     <div th:if="${currentStep == 2}" class="space-y-6">
                         <div class="text-center mb-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Promień strefy</h2>
-                            <p class="text-gray-600">Ustaw promień strefy bezpieczeństwa</p>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2" th:text="#{wizard_step3_title}">Promień strefy</h2>
+                            <p class="text-gray-600" th:text="#{wizard_step3_desc}">Ustaw promień strefy bezpieczeństwa</p>
                         </div>
                         
                         <!-- Radius Slider -->
@@ -141,7 +144,7 @@
                                 <div class="text-4xl font-bold text-blue-600 mb-2">
                                     <span id="radiusValue">500</span>m
                                 </div>
-                                <p class="text-gray-500">Promień strefy</p>
+                                <p class="text-gray-500" th:text="#{zone_radius}">Promień strefy</p>
                             </div>
                             
                             <div class="px-4">
@@ -194,8 +197,8 @@
                     <!-- Step 4: Notifications -->
                     <div th:if="${currentStep == 3}" class="space-y-6">
                         <div class="text-center mb-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Powiadomienia</h2>
-                            <p class="text-gray-600">Wybierz urządzenia, które będą otrzymywać powiadomienia</p>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2" th:text="#{wizard_step4_title}">Powiadomienia</h2>
+                            <p class="text-gray-600" th:text="#{wizard_step4_desc}">Wybierz urządzenia, które będą otrzymywać powiadomienia</p>
                         </div>
                         
                         <!-- Device List -->
@@ -224,22 +227,22 @@
                         
                         <!-- Summary -->
                         <div class="bg-gray-50 rounded-lg p-4">
-                            <h3 class="font-medium text-gray-900 mb-2">Podsumowanie strefy</h3>
+                            <h3 class="font-medium text-gray-900 mb-2" th:text="#{zones_title}">Podsumowanie strefy</h3>
                             <div class="space-y-1 text-sm text-gray-600">
                                 <div class="flex justify-between">
-                                    <span>Nazwa:</span>
+                                    <span th:text="#{zone_name}">Nazwa:</span>
                                     <span id="summaryName" class="font-medium">-</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span>Ikona:</span>
+                                    <span th:text="#{zone_icon}">Ikona:</span>
                                     <span id="summaryIcon" class="font-medium">-</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span>Adres:</span>
+                                    <span th:text="#{zone_address}">Adres:</span>
                                     <span id="summaryAddress" class="font-medium">-</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span>Promień:</span>
+                                    <span th:text="#{zone_radius}">Promień:</span>
                                     <span id="summaryRadius" class="font-medium">-</span>
                                 </div>
                             </div>
@@ -253,7 +256,7 @@
                             th:if="${currentStep > 0}"
                             onclick="previousStep()" 
                             class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200">
-                        ← Wstecz
+                        ← <span th:text="#{back}">Wstecz</span>
                     </button>
                     <div th:unless="${currentStep > 0}" class="w-20"></div>
                     
@@ -261,19 +264,19 @@
                         <button type="button" 
                                 onclick="cancelWizard()" 
                                 class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200">
-                            Anuluj
+                            <span th:text="#{cancel}">Anuluj</span>
                         </button>
                         <button type="button" 
                                 th:if="${currentStep < 3}"
                                 onclick="nextStep();" 
                                 class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
-                            Dalej →
+                            <span th:text="#{next}">Dalej</span> →
                         </button>
                         <button type="button" 
                                 th:if="${currentStep == 3}"
                                 onclick="saveZone()" 
                                 class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
-                            Zapisz strefę
+                            <span th:text="#{save_zone}">Zapisz strefę</span>
                         </button>
                     </div>
                 </div>

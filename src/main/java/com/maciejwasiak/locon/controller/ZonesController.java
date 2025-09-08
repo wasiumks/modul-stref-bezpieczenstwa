@@ -5,6 +5,8 @@ import com.maciejwasiak.locon.model.Zone;
 import com.maciejwasiak.locon.service.ZoneService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +24,8 @@ public class ZonesController {
     
     @Autowired
     private ZoneService zoneService;
+    @Autowired
+    private MessageSource messageSource;
 
     @GetMapping("/zones")
     public String zones(@RequestParam(required = false) String deleted, 
@@ -49,7 +53,7 @@ public class ZonesController {
             "3", "Samsung Galaxy"
         );
 
-        model.addAttribute("pageTitle", "Strefy Bezpieczeństwa");
+        model.addAttribute("pageTitle", messageSource.getMessage("zones_title", null, LocaleContextHolder.getLocale()));
         model.addAttribute("pageDescription", "Zarządzaj strefami bezpieczeństwa dla swoich bliskich");
         model.addAttribute("zones", zones);
         model.addAttribute("hasZones", !zones.isEmpty());
@@ -110,7 +114,10 @@ public class ZonesController {
                     .orElseThrow(() -> new RuntimeException("Zone not found"));
         }
 
-        model.addAttribute("pageTitle", Boolean.TRUE.equals(edit) ? "Edytuj strefę" : "Kreator strefy");
+        String pageTitle = Boolean.TRUE.equals(edit)
+                ? messageSource.getMessage("wizard_edit_title", null, LocaleContextHolder.getLocale())
+                : messageSource.getMessage("wizard_title", null, LocaleContextHolder.getLocale());
+        model.addAttribute("pageTitle", pageTitle);
         model.addAttribute("currentStep", step);
         model.addAttribute("wizardSteps", wizardSteps);
         model.addAttribute("availableIcons", availableIcons);

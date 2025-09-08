@@ -173,11 +173,23 @@
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                                             </svg>
-                                            <span th:text="${deviceIdToName[device] ?: device}">iPhone 13</span>
+                                            <span th:text="${deviceIdToName[device] != null ? deviceIdToName[device] : (deviceIdToName[device + ''] != null ? deviceIdToName[device + ''] : device)}">iPhone 13</span>
                                         </span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Hidden zones dataset for map -->
+                        <div id="zonesData" style="display:none;">
+                            <div th:each="z : ${zones}"
+                                 th:attr="data-lat=${z.latitude},data-lng=${z.longitude},data-icon=${z.icon},data-name=${z.name},data-radius=${z.radius}"></div>
+                        </div>
+
+                        <!-- Zones Map -->
+                        <div class="mt-10">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3" th:text="#{zones_map}">Mapa stref</h3>
+                            <div id="zonesMap" class="w-full bg-gray-100 rounded-xl border border-gray-200" style="height:400px;"></div>
                         </div>
                     </div>
                     
@@ -436,6 +448,63 @@
                 window.location.href = '/auth/login';
             }
         }
+    </script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script th:if="${hasZones}">
+        document.addEventListener('DOMContentLoaded', function() {
+            const zones = Array.from(document.querySelectorAll('#zonesData > div')).map(el => ({
+                latitude: parseFloat(el.getAttribute('data-lat')),
+                longitude: parseFloat(el.getAttribute('data-lng')),
+                icon: el.getAttribute('data-icon') || 'pin',
+                name: el.getAttribute('data-name') || '',
+                radius: parseInt(el.getAttribute('data-radius')) || 500
+            })).filter(z => !Number.isNaN(z.latitude) && !Number.isNaN(z.longitude));
+            const mapEl = document.getElementById('zonesMap');
+            if (!mapEl) return;
+            const center = zones.length ? [zones[0].latitude || 52.2297, zones[0].longitude || 21.0122] : [52.2297, 21.0122];
+            const map = L.map(mapEl).setView(center, 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            const bounds = L.latLngBounds();
+            const emojiMap = {home:'🏠',school:'🏫',work:'🏢',hospital:'🏥',gym:'💪',park:'🌳',shop:'🛒',restaurant:'🍽️'};
+            zones.forEach(z => {
+                const pos = [z.latitude, z.longitude];
+                const emoji = emojiMap[z.icon] || '📍';
+                const icon = L.divIcon({html: `<div style="font-size:20px;">${emoji}</div>`, className: 'emoji-marker', iconSize: [20, 20], iconAnchor: [10, 10]});
+                L.marker(pos, { icon, title: z.name }).addTo(map);
+                L.circle(pos, { radius: z.radius || 500, color: '#2563eb', weight: 1, fillColor: '#3b82f6', fillOpacity: 0.1 }).addTo(map);
+                bounds.extend(pos);
+            });
+            // User location from browser
+            let userMarker;
+            let userAccuracyCircle;
+            map.on('locationfound', function(e) {
+                const pos = e.latlng;
+                const userIcon = L.divIcon({ html: '<div style="width:10px;height:10px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 2px rgba(16,185,129,0.35);"></div>', className: 'user-location', iconSize: [14, 14], iconAnchor: [7, 7] });
+                if (!userMarker) {
+                    userMarker = L.marker(pos, { icon: userIcon, title: 'Your location' }).addTo(map);
+                    userAccuracyCircle = L.circle(pos, { radius: e.accuracy || 30, color: '#10b981', weight: 1, fillColor: '#34d399', fillOpacity: 0.15 }).addTo(map);
+                } else {
+                    userMarker.setLatLng(pos);
+                    if (userAccuracyCircle) userAccuracyCircle.setLatLng(pos).setRadius(e.accuracy || 30);
+                }
+                bounds.extend(pos);
+                map.fitBounds(bounds, { padding: [20, 20] });
+            });
+            map.on('locationerror', function() { /* ignore */ });
+            map.locate({ setView: false, enableHighAccuracy: true });
+            if (zones.length > 1) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+            // Ensure proper sizing after layout
+            setTimeout(() => map.invalidateSize(), 200);
+        });
     </script>
 
     </th:block>

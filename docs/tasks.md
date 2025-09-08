@@ -125,12 +125,12 @@
 
 ---
 
-## Phase 7 – Maps & Geofencing
-- [ ] **Google Maps Integration**
+## Phase 7 – Maps & Geofencing ✅ COMPLETED
+- [x] **Google Maps Integration**
   - Display map in wizard step 2 & 3
   - Allow marker placement
   - Draw circle for radius
-- [ ] **Mock Geofencing**
+- [x] **Mock Geofencing**
   - Create mock endpoint simulating enter/exit events
   - Return random enter/exit logs for testing
 

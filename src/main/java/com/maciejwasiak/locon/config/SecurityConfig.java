@@ -20,6 +20,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
                 .requestMatchers("/api/user/permissions").permitAll()
+                .requestMatchers("/api/geofence/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .anyRequest().permitAll() // Temporarily allow all requests for testing
             )

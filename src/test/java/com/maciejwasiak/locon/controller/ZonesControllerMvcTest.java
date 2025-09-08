@@ -43,6 +43,14 @@ class ZonesControllerMvcTest {
                 .andExpect(view().name("zones"))
                 .andExpect(model().attributeExists("pageTitle", "zones", "user"));
     }
+
+    @Test
+    void getZoneWizard_ShouldRenderWizard() throws Exception {
+        mockMvc.perform(get("/zones/wizard").session(session))
+                .andExpect(status().isOk())
+                .andExpect(view().name("zone-wizard"))
+                .andExpect(model().attributeExists("googleMapsApiKey"));
+    }
 }
 
 

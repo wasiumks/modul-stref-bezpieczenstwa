@@ -20,7 +20,7 @@ public class DeviceService {
     
     @Transactional(readOnly = true)
     public List<DeviceDto> getDevicesByUserId(Long userId) {
-        log.info("Fetching devices for user id: {}", userId);
+        log.debug("Fetching devices for user id");
         return deviceRepository.findByUserId(userId).stream()
                 .map(DeviceDto::from)
                 .toList();
@@ -28,7 +28,7 @@ public class DeviceService {
     
     @Transactional(readOnly = true)
     public List<DeviceDto> getDevicesByUser(User user) {
-        log.info("Fetching devices for user: {}", user.getPhone());
+        log.debug("Fetching devices for user");
         return deviceRepository.findByUser(user).stream()
                 .map(DeviceDto::from)
                 .toList();
@@ -36,7 +36,7 @@ public class DeviceService {
     
     @Transactional(readOnly = true)
     public Optional<DeviceDto> getDeviceById(Long id) {
-        log.info("Fetching device with id: {}", id);
+        log.debug("Fetching device by id");
         return deviceRepository.findById(id)
                 .map(DeviceDto::from);
     }

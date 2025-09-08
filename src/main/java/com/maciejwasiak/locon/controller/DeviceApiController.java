@@ -26,18 +26,17 @@ public class DeviceApiController {
     public ResponseEntity<List<DeviceDto>> getUserDevices(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
-            log.warn("GET /api/devices - No user in session");
             return ResponseEntity.status(401).build();
         }
         
-        log.info("GET /api/devices - Fetching devices for user: {}", user.getPhone());
+        log.debug("GET /api/devices");
         List<DeviceDto> devices = deviceService.getDevicesByUser(user);
         return ResponseEntity.ok(devices);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<DeviceDto> getDeviceById(@PathVariable Long id) {
-        log.info("GET /api/devices/{} - Fetching device by id", id);
+        log.debug("GET /api/devices/{}", id);
         return deviceService.getDeviceById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

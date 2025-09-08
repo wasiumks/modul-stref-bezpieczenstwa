@@ -15,8 +15,8 @@ public class DataInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        log.info("Initializing default users...");
+        log.debug("Initializing default users...");
         authService.createDefaultUsers();
-        log.info("Default users initialized successfully");
+        log.debug("Default users initialized successfully");
     }
 }

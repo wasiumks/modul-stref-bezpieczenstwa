@@ -24,7 +24,7 @@ public class ZoneApiController {
     
     @GetMapping
     public ResponseEntity<List<ZoneDto>> getAllZones() {
-        log.info("GET /api/zones - Fetching all zones");
+        log.debug("GET /api/zones");
         List<Zone> zones = zoneService.getAllZones();
         List<ZoneDto> zoneDtos = zones.stream()
                 .map(ZoneDto::from)
@@ -34,7 +34,7 @@ public class ZoneApiController {
     
     @GetMapping("/{id}")
     public ResponseEntity<ZoneDto> getZoneById(@PathVariable Long id) {
-        log.info("GET /api/zones/{} - Fetching zone by id", id);
+        log.debug("GET /api/zones/{}", id);
         return zoneService.getZoneById(id)
                 .map(ZoneDto::from)
                 .map(ResponseEntity::ok)
@@ -43,7 +43,7 @@ public class ZoneApiController {
     
     @PostMapping
     public ResponseEntity<ZoneDto> createZone(@Valid @RequestBody ZoneCreateRequest request) {
-        log.info("POST /api/zones - Creating new zone: {}", request.name());
+        log.debug("POST /api/zones");
         ZoneDto zoneDto = request.toZoneDto();
         Zone createdZone = zoneService.createZone(zoneDto.name(), zoneDto.icon(), zoneDto.address(), 
                 zoneDto.latitude(), zoneDto.longitude(), zoneDto.radius());
@@ -52,7 +52,7 @@ public class ZoneApiController {
     
     @PutMapping("/{id}")
     public ResponseEntity<ZoneDto> updateZone(@PathVariable Long id, @Valid @RequestBody ZoneCreateRequest request) {
-        log.info("PUT /api/zones/{} - Updating zone: {}", id, request.name());
+        log.debug("PUT /api/zones/{}", id);
         ZoneDto zoneDto = request.toZoneDto();
         Zone updatedZone = zoneService.updateZone(id, zoneDto);
         return ResponseEntity.ok(ZoneDto.from(updatedZone));
@@ -60,7 +60,7 @@ public class ZoneApiController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteZone(@PathVariable Long id) {
-        log.info("DELETE /api/zones/{} - Deleting zone", id);
+        log.debug("DELETE /api/zones/{}", id);
         try {
             zoneService.deleteZone(id);
             return ResponseEntity.noContent().build();
@@ -72,7 +72,7 @@ public class ZoneApiController {
     @PutMapping("/{id}/notifications")
     public ResponseEntity<ZoneDto> toggleNotifications(@PathVariable Long id, 
                                                      @RequestParam Boolean enabled) {
-        log.info("PUT /api/zones/{}/notifications - Toggling notifications to: {}", id, enabled);
+        log.debug("PUT /api/zones/{}/notifications", id);
         try {
             Zone updatedZone = zoneService.toggleNotifications(id, enabled);
             return ResponseEntity.ok(ZoneDto.from(updatedZone));

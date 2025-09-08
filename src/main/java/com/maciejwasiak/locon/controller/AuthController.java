@@ -50,23 +50,20 @@ public class AuthController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> verifyOtp(@Valid @RequestBody OtpRequest request, HttpSession session) {
         try {
-            log.info("=== OTP VERIFICATION STARTED ===");
-            log.info("Phone: {}", request.phone());
-            log.info("OTP: {}", request.otp());
             
             boolean isValid = authService.validateOtp(request.phone(), request.otp());
-            log.info("OTP validation result: {}", isValid);
+            log.debug("OTP validation result: {}", isValid);
             
             if (isValid) {
                 User user = authService.getUserByPhone(request.phone());
-                log.info("User found: {}", user != null ? user.getPhone() + " - " + user.getRole() : "null");
+                log.debug("User found and session will be set");
                 
                 if (user != null) {
                     session.setAttribute("user", user);
                     session.setAttribute("userRole", user.getRole().name());
                     session.setAttribute("userPhone", user.getPhone());
                     
-                    log.info("Session attributes set successfully");
+                    log.debug("Session attributes set successfully");
                     return ResponseEntity.ok(Map.of(
                         "success", true,
                         "message", "Login successful",

@@ -13,7 +13,7 @@ import java.util.Map;
 public class ThemeService {
     
     public ThemeDto getThemeForOperator(String operator) {
-        log.info("Fetching theme for operator: {}", operator);
+        log.debug("Fetching theme for operator");
         
         // Mock implementation - in real app this would fetch from database or external service
         return switch (operator.toLowerCase()) {

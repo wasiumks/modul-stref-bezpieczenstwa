@@ -20,7 +20,6 @@ public class AuthService {
     
     public String generateOtp(String phone) {
         String otp = String.format("%06d", random.nextInt(1000000));
-        log.info("Generated OTP: {}", otp);
         
         // Find or create user
         User user = userRepository.findByPhone(phone)
@@ -32,12 +31,6 @@ public class AuthService {
         
         userRepository.save(user);
         
-        // Log OTP for development purposes
-        log.info("=== OTP GENERATED ===");
-        log.info("Phone: {}", phone);
-        log.info("OTP Code: {}", otp);
-        log.info("Expires at: {}", user.getOtpExpiresAt());
-        log.info("===================");
         
         return otp;
     }

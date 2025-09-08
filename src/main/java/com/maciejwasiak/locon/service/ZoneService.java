@@ -27,17 +27,15 @@ public class ZoneService {
      */
     public Zone createZone(String name, String address, String icon, Integer radius, 
                           List<String> deviceIds, User user) {
-        log.info("Creating zone: {} for user: {}", name, user.getPhone());
-        log.info("User ID: {}, User Phone: {}", user.getId(), user.getPhone());
-        log.info("Device IDs: {}", deviceIds);
+        log.debug("Creating zone for user");
         
         try {
             Zone zone = new Zone(name, address, icon, radius, user);
             zone.setDeviceIds(deviceIds);
             
-            log.info("Zone object created, saving to database...");
+            log.debug("Zone object created, saving to database...");
             Zone savedZone = zoneRepository.save(zone);
-            log.info("Zone created successfully with ID: {}", savedZone.getId());
+            log.debug("Zone created successfully with ID: {}", savedZone.getId());
             
             return savedZone;
         } catch (Exception e) {
@@ -51,12 +49,12 @@ public class ZoneService {
      */
     public Zone createZone(String name, String icon, String address, Double latitude, 
                           Double longitude, Integer radius) {
-        log.info("Creating zone: {} at coordinates: {}, {}", name, latitude, longitude);
+        log.debug("Creating zone with coordinates");
         
         Zone zone = new Zone(name, icon, address, latitude, longitude, radius);
         
         Zone savedZone = zoneRepository.save(zone);
-        log.info("Zone created successfully with ID: {}", savedZone.getId());
+        log.debug("Zone created successfully with ID: {}", savedZone.getId());
         
         return savedZone;
     }
@@ -66,7 +64,7 @@ public class ZoneService {
      */
     @Transactional(readOnly = true)
     public List<Zone> getAllZones() {
-        log.info("Fetching all zones");
+        log.debug("Fetching all zones");
         return zoneRepository.findAll();
     }
     
@@ -75,7 +73,7 @@ public class ZoneService {
      */
     @Transactional(readOnly = true)
     public Optional<Zone> getZoneById(Long zoneId) {
-        log.info("Fetching zone ID: {}", zoneId);
+        log.debug("Fetching zone by ID");
         return zoneRepository.findById(zoneId);
     }
     
@@ -84,7 +82,7 @@ public class ZoneService {
      */
     @Transactional(readOnly = true)
     public List<Zone> getZonesByUser(User user) {
-        log.info("Fetching zones for user: {}", user.getPhone());
+        log.debug("Fetching zones for user");
         return zoneRepository.findByUserOrderByCreatedAtDesc(user);
     }
     
@@ -93,7 +91,7 @@ public class ZoneService {
      */
     @Transactional(readOnly = true)
     public Optional<Zone> getZoneByIdAndUser(Long zoneId, User user) {
-        log.info("Fetching zone ID: {} for user: {}", zoneId, user.getPhone());
+        log.debug("Fetching zone by ID for user");
         return zoneRepository.findByIdAndUser(zoneId, user);
     }
     
@@ -102,7 +100,7 @@ public class ZoneService {
      */
     public Zone updateZone(Long zoneId, String name, String address, String icon, 
                           Integer radius, List<String> deviceIds, User user) {
-        log.info("Updating zone ID: {} for user: {}", zoneId, user.getPhone());
+        log.debug("Updating zone for user");
         
         Zone zone = zoneRepository.findByIdAndUser(zoneId, user)
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
@@ -114,7 +112,7 @@ public class ZoneService {
         zone.setDeviceIds(deviceIds);
         
         Zone updatedZone = zoneRepository.save(zone);
-        log.info("Zone updated successfully with ID: {}", updatedZone.getId());
+        log.debug("Zone updated successfully with ID: {}", updatedZone.getId());
         
         return updatedZone;
     }
@@ -123,7 +121,7 @@ public class ZoneService {
      * Update an existing zone (for API)
      */
     public Zone updateZone(Long zoneId, ZoneDto zoneDto) {
-        log.info("Updating zone ID: {} via API", zoneId);
+        log.debug("Updating zone via API");
         
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
@@ -136,7 +134,7 @@ public class ZoneService {
         zone.setRadius(zoneDto.radius());
         
         Zone updatedZone = zoneRepository.save(zone);
-        log.info("Zone updated successfully with ID: {}", updatedZone.getId());
+        log.debug("Zone updated successfully with ID: {}", updatedZone.getId());
         
         return updatedZone;
     }
@@ -145,28 +143,28 @@ public class ZoneService {
      * Delete a zone
      */
     public void deleteZone(Long zoneId, User user) {
-        log.info("Deleting zone ID: {} for user: {}", zoneId, user.getPhone());
+        log.debug("Deleting zone for user");
         
         if (!zoneRepository.existsByIdAndUser(zoneId, user)) {
             throw new RuntimeException("Zone not found");
         }
         
         zoneRepository.deleteByIdAndUser(zoneId, user);
-        log.info("Zone deleted successfully with ID: {}", zoneId);
+        log.debug("Zone deleted successfully with ID: {}", zoneId);
     }
     
     /**
      * Delete a zone (for API)
      */
     public void deleteZone(Long zoneId) {
-        log.info("Deleting zone ID: {} via API", zoneId);
+        log.debug("Deleting zone via API");
         
         if (!zoneRepository.existsById(zoneId)) {
             throw new RuntimeException("Zone not found");
         }
         
         zoneRepository.deleteById(zoneId);
-        log.info("Zone deleted successfully with ID: {}", zoneId);
+        log.debug("Zone deleted successfully with ID: {}", zoneId);
     }
     
     /**
@@ -192,14 +190,14 @@ public class ZoneService {
      * Toggle notifications for a zone
      */
     public Zone toggleNotifications(Long zoneId, Boolean enabled) {
-        log.info("Toggling notifications for zone ID: {} to: {}", zoneId, enabled);
+        log.debug("Toggling notifications");
         
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
         
         zone.setNotificationsEnabled(enabled);
         Zone updatedZone = zoneRepository.save(zone);
-        log.info("Notifications toggled successfully for zone ID: {}", zoneId);
+        log.debug("Notifications toggled successfully for zone ID: {}", zoneId);
         
         return updatedZone;
     }

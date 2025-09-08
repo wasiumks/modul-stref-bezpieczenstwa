@@ -17,7 +17,7 @@ public class I18nService {
     private final MessageSource messageSource;
     
     public Map<String, String> getTranslations(String language) {
-        log.info("Fetching translations for language: {}", language);
+        log.debug("Fetching translations for language");
         
         Locale locale = getLocaleFromLanguage(language);
         Map<String, String> translations = new HashMap<>();
@@ -41,7 +41,7 @@ public class I18nService {
                 String translation = messageSource.getMessage(key, null, locale);
                 translations.put(key, translation);
             } catch (Exception e) {
-                log.warn("Translation not found for key: {} in language: {}", key, language);
+                log.debug("Translation not found for key: {} in language: {}", key, language);
                 translations.put(key, key); // Fallback to key if translation not found
             }
         }

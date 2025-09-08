@@ -22,11 +22,11 @@ public class DataLoaderService implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        log.info("Starting data loading...");
+        log.debug("Starting data loading...");
         
         // Check if data already exists
         if (userRepository.count() > 0) {
-            log.info("Data already exists, skipping data loading");
+            log.debug("Data already exists, skipping data loading");
             return;
         }
         
@@ -55,8 +55,8 @@ public class DataLoaderService implements CommandLineRunner {
         createZoneDevice(schoolZone, childWatch, true);
         createZoneDevice(schoolZone, userPhone, false); // Notifications disabled for school
         
-        log.info("Data loading completed successfully!");
-        log.info("Created {} users, {} devices, {} zones, {} zone-device assignments", 
+        log.debug("Data loading completed successfully!");
+        log.debug("Created {} users, {} devices, {} zones, {} zone-device assignments", 
                 userRepository.count(), deviceRepository.count(), zoneRepository.count(), zoneDeviceRepository.count());
     }
     

@@ -21,7 +21,7 @@ public class I18nApiController {
     
     @GetMapping("/{lang}")
     public ResponseEntity<Map<String, String>> getTranslations(@PathVariable String lang) {
-        log.info("GET /api/i18n/{} - Fetching translations for language", lang);
+        log.debug("GET /api/i18n/{}", lang);
         Map<String, String> translations = i18nService.getTranslations(lang);
         return ResponseEntity.ok(translations);
     }

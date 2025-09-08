@@ -43,6 +43,33 @@ public class ZoneService {
             throw e;
         }
     }
+
+    /**
+     * Create a new zone for a user with explicit coordinates
+     */
+    public Zone createZone(String name, String address, String icon, Integer radius,
+                           Double latitude, Double longitude,
+                           List<String> deviceIds, User user) {
+        log.debug("Creating zone for user with coordinates");
+
+        try {
+            Zone zone = new Zone(name, address, icon, radius, user);
+            if (latitude != null) {
+                zone.setLatitude(latitude);
+            }
+            if (longitude != null) {
+                zone.setLongitude(longitude);
+            }
+            zone.setDeviceIds(deviceIds);
+
+            Zone savedZone = zoneRepository.save(zone);
+            log.debug("Zone created successfully with ID: {}", savedZone.getId());
+            return savedZone;
+        } catch (Exception e) {
+            log.error("Error creating zone with coordinates: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
     
     /**
      * Create a new zone with coordinates
@@ -114,6 +141,35 @@ public class ZoneService {
         Zone updatedZone = zoneRepository.save(zone);
         log.debug("Zone updated successfully with ID: {}", updatedZone.getId());
         
+        return updatedZone;
+    }
+
+    /**
+     * Update an existing zone with coordinates
+     */
+    public Zone updateZone(Long zoneId, String name, String address, String icon,
+                           Integer radius, Double latitude, Double longitude,
+                           List<String> deviceIds, User user) {
+        log.debug("Updating zone for user with coordinates");
+
+        Zone zone = zoneRepository.findByIdAndUser(zoneId, user)
+                .orElseThrow(() -> new RuntimeException("Zone not found"));
+
+        zone.setName(name);
+        zone.setAddress(address);
+        zone.setIcon(icon);
+        zone.setRadius(radius);
+        if (latitude != null) {
+            zone.setLatitude(latitude);
+        }
+        if (longitude != null) {
+            zone.setLongitude(longitude);
+        }
+        zone.setDeviceIds(deviceIds);
+
+        Zone updatedZone = zoneRepository.save(zone);
+        log.debug("Zone updated successfully with ID: {}", updatedZone.getId());
+
         return updatedZone;
     }
     

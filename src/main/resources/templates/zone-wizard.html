@@ -106,28 +106,15 @@
                             <p class="text-gray-600" th:text="#{wizard_step2_desc}">Wprowadź adres lub wybierz lokalizację na mapie</p>
                         </div>
                         
-                        <!-- Address Input -->
-                        <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700" th:text="#{zone_address}">Adres</label>
-                            <input type="text" 
-                                   id="zoneAddress" 
-                                   th:placeholder="#{zone_address_placeholder}"
-                                   th:value="${existingZone?.address}"
-                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
+                        <!-- Hidden fields for map-only selection -->
+                        <input type="hidden" id="zoneAddress" th:value="${existingZone?.address}">
+                        <input type="hidden" id="zoneLat" th:value="${existingZone?.latitude}">
+                        <input type="hidden" id="zoneLng" th:value="${existingZone?.longitude}">
                         
-                        <!-- Map Placeholder -->
+                        <!-- Map Container -->
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700" th:text="#{set_location}">Mapa</label>
-                            <div class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                                <div class="text-center">
-                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    <p class="text-gray-500" th:text="#{set_zone_area}">Mapa będzie dostępna w następnej fazie rozwoju</p>
-                                </div>
-                            </div>
+                            <div id="map" class="w-full h-64 bg-gray-100 rounded-lg border border-gray-300"></div>
                         </div>
                     </div>
 
@@ -157,40 +144,15 @@
                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                             </div>
                             
-                            <!-- Quick Radius Buttons -->
-                            <div class="flex justify-center space-x-2">
-                                <button type="button" 
-                                        onclick="setRadius(100)" 
-                                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                                    100m
-                                </button>
-                                <button type="button" 
-                                        onclick="setRadius(500)" 
-                                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                                    500m
-                                </button>
-                                <button type="button" 
-                                        onclick="setRadius(1000)" 
-                                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                                    1km
-                                </button>
-                                <button type="button" 
-                                        onclick="setRadius(2000)" 
-                                        class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                                    2km
-                                </button>
-                            </div>
+                            
                         </div>
                         
-                        <!-- Map Preview Placeholder -->
-                        <div class="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                            <div class="text-center">
-                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                <p class="text-gray-500 text-sm">Podgląd mapy z okręgiem promienia</p>
+                        <!-- Selected point info + Map Preview -->
+                        <div class="space-y-2">
+                            <div class="text-sm text-gray-600">
+                                <span th:text="#{set_location}">Mapa</span> · <span id="selectedPoint">--</span>
                             </div>
+                            <div id="mapPreview" class="w-full h-48 bg-gray-100 rounded-lg border border-gray-300"></div>
                         </div>
                     </div>
 
@@ -576,6 +538,8 @@
                 const nameInput = document.getElementById('zoneName');
                 const addressInput = document.getElementById('zoneAddress');
                 const radiusSlider = document.getElementById('radiusSlider');
+                const zoneLat = document.getElementById('zoneLat');
+                const zoneLng = document.getElementById('zoneLng');
                 
                 if (nameInput && nameInput.value.trim()) {
                     wizardData.name = nameInput.value.trim();
@@ -585,6 +549,12 @@
                 }
                 if (radiusSlider && radiusSlider.value) {
                     wizardData.radius = parseInt(radiusSlider.value) || 500;
+                }
+                if (zoneLat && zoneLat.value) {
+                    wizardData.latitude = parseFloat(zoneLat.value);
+                }
+                if (zoneLng && zoneLng.value) {
+                    wizardData.longitude = parseFloat(zoneLng.value);
                 }
             }
             
@@ -621,6 +591,8 @@
             formData.append('icon', wizardData.icon);
             formData.append('address', wizardData.address.trim());
             formData.append('radius', wizardData.radius || 500);
+            if (wizardData.latitude) formData.append('latitude', wizardData.latitude);
+            if (wizardData.longitude) formData.append('longitude', wizardData.longitude);
             
             // Get selected devices from checkboxes if they exist
             const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
@@ -684,14 +656,17 @@
                 // Save the icon
                 wizardData.icon = selectedIcon.name;
             } else if (currentStep === 1) {
-                // Step 1: Zone address
-                const zoneAddress = document.getElementById('zoneAddress');
-                if (!zoneAddress || !zoneAddress.value.trim()) {
-                    alert('Proszę wprowadzić adres strefy');
+                // Step 1: must have a selected point (lat/lng)
+                const zoneLat = document.getElementById('zoneLat');
+                const zoneLng = document.getElementById('zoneLng');
+                if (!zoneLat || !zoneLat.value || !zoneLng || !zoneLng.value) {
+                    alert('Proszę wybrać punkt na mapie');
                     return false;
                 }
-                // Save the zone address
-                wizardData.address = zoneAddress.value.trim();
+                // Store address as "lat,lng" to backend
+                const lat = parseFloat(zoneLat.value);
+                const lng = parseFloat(zoneLng.value);
+                wizardData.address = lat.toFixed(6) + ',' + lng.toFixed(6);
             } else if (currentStep === 2) {
                 // Step 2: Radius (optional, has default value)
                 const radiusSlider = document.getElementById('radiusSlider');
@@ -718,10 +693,14 @@
                 wizardData.name = nameInput.value.trim();
             }
             
-            // Step 1: Address (if visible)
-            const addressInput = document.getElementById('zoneAddress');
-            if (addressInput && addressInput.value.trim()) {
-                wizardData.address = addressInput.value.trim();
+            // Step 1: Address is derived from map selection
+            const zoneLat = document.getElementById('zoneLat');
+            const zoneLng = document.getElementById('zoneLng');
+            if (zoneLat && zoneLat.value) {
+                wizardData.latitude = parseFloat(zoneLat.value);
+            }
+            if (zoneLng && zoneLng.value) {
+                wizardData.longitude = parseFloat(zoneLng.value);
             }
             
             // Step 2: Radius (if visible)
@@ -859,9 +838,7 @@
             if (nameInput && nameInput.value) {
                 wizardData.name = nameInput.value;
             }
-            if (addressInput && addressInput.value) {
-                wizardData.address = addressInput.value;
-            }
+            // address is derived from map selection (lat,lng)
             if (radiusSlider && radiusSlider.value) {
                 wizardData.radius = parseInt(radiusSlider.value);
             }
@@ -949,19 +926,120 @@
                 });
             }
             
-            const zoneAddress = document.getElementById('zoneAddress');
-            if (zoneAddress) {
-                zoneAddress.addEventListener('input', function() {
-                    wizardData.address = this.value;
-                    saveWizardData();
-                });
-            }
+            // No address input on step 2; address is set from map selection
         });
 
         // Update summary on input changes
         document.addEventListener('input', function(e) {
             if (e.target.id === 'zoneName' || e.target.id === 'zoneAddress') {
                 updateSummary();
+            }
+        });
+        
+        // Leaflet integration (Step 2 and 3)
+        let map, marker, circle, previewMap, previewMarker, previewCircle;
+        function initLeaflet() {
+            const latInput = document.getElementById('zoneLat');
+            const lngInput = document.getElementById('zoneLng');
+            const savedLat = (typeof wizardData !== 'undefined' && wizardData.latitude != null) ? parseFloat(wizardData.latitude) : null;
+            const savedLng = (typeof wizardData !== 'undefined' && wizardData.longitude != null) ? parseFloat(wizardData.longitude) : null;
+            const defaultLat = latInput && latInput.value ? parseFloat(latInput.value) : (savedLat != null ? savedLat : 52.2297);
+            const defaultLng = lngInput && lngInput.value ? parseFloat(lngInput.value) : (savedLng != null ? savedLng : 21.0122);
+            const center = [defaultLat, defaultLng];
+            const radius = wizardData.radius || parseInt(document.getElementById('radiusSlider')?.value) || 500;
+
+            if (currentStep === 1) {
+                map = L.map('map').setView(center, 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+                marker = L.marker(center, { draggable: true }).addTo(map);
+                circle = L.circle(center, { radius: 0, color: '#2563eb', weight: 1, fillColor: '#3b82f6', fillOpacity: 0.1 }).addTo(map);
+
+                const updateLatLng = (latlng) => {
+                    const pos = latlng || marker.getLatLng();
+                    if (pos && latInput && lngInput) {
+                        latInput.value = pos.lat;
+                        lngInput.value = pos.lng;
+                        wizardData.latitude = pos.lat;
+                        wizardData.longitude = pos.lng;
+                        wizardData.address = pos.lat.toFixed(6) + ',' + pos.lng.toFixed(6);
+                        saveWizardData();
+                        if (circle) circle.setLatLng(pos);
+                    }
+                };
+                marker.on('dragend', () => updateLatLng());
+                map.on('click', (e) => { marker.setLatLng(e.latlng); updateLatLng(e.latlng); });
+
+                // Show user's current location (GPS) and center/initialize selection if not set
+                let userMarker;
+                let userAccuracyCircle;
+                map.on('locationfound', function(e) {
+                    const pos = e.latlng;
+                    if (!userMarker) {
+                        const userIcon = L.divIcon({ html: '<div style="width:10px;height:10px;background:#1d4ed8;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 2px rgba(29,78,216,0.35);"></div>', className: 'user-location', iconSize: [14, 14], iconAnchor: [7, 7] });
+                        userMarker = L.marker(pos, { icon: userIcon, interactive: false }).addTo(map);
+                        userAccuracyCircle = L.circle(pos, { radius: e.accuracy || 30, color: '#1d4ed8', weight: 1, fillColor: '#60a5fa', fillOpacity: 0.15, interactive: false }).addTo(map);
+                    } else {
+                        userMarker.setLatLng(pos);
+                        if (userAccuracyCircle) userAccuracyCircle.setLatLng(pos).setRadius(e.accuracy || 30);
+                    }
+
+                    // If no selection was set yet, initialize marker at user location
+                    const hasSelection = !!(latInput && latInput.value && lngInput && lngInput.value);
+                    if (!hasSelection) {
+                        marker.setLatLng(pos);
+                        updateLatLng(pos);
+                        map.setView(pos, 15);
+                    }
+                });
+                map.on('locationerror', function() { /* ignore */ });
+                // Try to get browser location (high accuracy when available)
+                map.locate({ setView: false, enableHighAccuracy: true });
+            }
+
+            if (currentStep === 2) {
+                previewMap = L.map('mapPreview', { zoomControl: false, attributionControl: false }).setView(center, 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(previewMap);
+                previewMarker = L.marker(center).addTo(previewMap);
+                previewCircle = L.circle(center, { radius: radius, color: '#2563eb', weight: 1, fillColor: '#3b82f6', fillOpacity: 0.1 }).addTo(previewMap);
+
+                const slider = document.getElementById('radiusSlider');
+                if (slider) {
+                    slider.addEventListener('input', function() {
+                        const r = parseInt(this.value) || 500;
+                        if (previewCircle) previewCircle.setRadius(r);
+                    });
+                }
+
+                const selectedPoint = document.getElementById('selectedPoint');
+                if (selectedPoint) {
+                    const lat = (savedLat != null ? savedLat : (parseFloat(document.getElementById('zoneLat')?.value) || center[0]));
+                    const lng = (savedLng != null ? savedLng : (parseFloat(document.getElementById('zoneLng')?.value) || center[1]));
+                    selectedPoint.textContent = Number(lat).toFixed(6) + ', ' + Number(lng).toFixed(6);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentStep === 1 || currentStep === 2) {
+                if (window.L) {
+                    initLeaflet();
+                } else {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+                    link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+                    link.crossOrigin = '';
+                    document.head.appendChild(link);
+
+                    const script = document.createElement('script');
+                    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+                    script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+                    script.crossOrigin = '';
+                    script.async = true;
+                    script.defer = true;
+                    script.onload = initLeaflet;
+                    document.body.appendChild(script);
+                }
             }
         });
         </script>

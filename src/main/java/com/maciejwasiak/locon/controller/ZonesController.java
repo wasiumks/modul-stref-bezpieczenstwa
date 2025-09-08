@@ -170,6 +170,10 @@ public class ZonesController {
         model.addAttribute("isEditMode", Boolean.TRUE.equals(edit));
         model.addAttribute("existingZone", existingZone);
 
+        // Provide a placeholder for Google Maps API key from configuration if needed
+        String mapsApiKey = System.getenv().getOrDefault("GOOGLE_MAPS_API_KEY", "");
+        model.addAttribute("googleMapsApiKey", mapsApiKey);
+
         return "zone-wizard";
     }
 
@@ -207,7 +211,9 @@ public class ZonesController {
     public String createZone(@RequestParam String name, 
                            @RequestParam String icon, 
                            @RequestParam String address, 
-                           @RequestParam int radius, 
+                           @RequestParam int radius,
+                           @RequestParam(required = false) Double latitude,
+                           @RequestParam(required = false) Double longitude,
                            @RequestParam(required = false) String[] deviceIds,
                            HttpSession session) {
         // Get user from session
@@ -221,8 +227,8 @@ public class ZonesController {
         // Convert deviceIds array to List (create mutable list for Hibernate)
         List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
-        // Create zone in database
-        Zone createdZone = zoneService.createZone(name, address, icon, radius, deviceIdList, user);
+        // Create zone in database (with optional coordinates)
+        Zone createdZone = zoneService.createZone(name, address, icon, radius, latitude, longitude, deviceIdList, user);
         
         // Redirect to success page with zone ID
         return "redirect:/zones/success?zoneId=" + createdZone.getId();
@@ -233,7 +239,9 @@ public class ZonesController {
                            @RequestParam String name, 
                            @RequestParam String icon, 
                            @RequestParam String address, 
-                           @RequestParam int radius, 
+                           @RequestParam int radius,
+                           @RequestParam(required = false) Double latitude,
+                           @RequestParam(required = false) Double longitude,
                            @RequestParam(required = false) String[] deviceIds,
                            HttpSession session) {
         // Get user from session
@@ -259,8 +267,8 @@ public class ZonesController {
         List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
         try {
-            // Update zone in database
-            Zone updatedZone = zoneService.updateZone(id, name, address, icon, radius, deviceIdList, user);
+            // Update zone in database (with optional coordinates)
+            Zone updatedZone = zoneService.updateZone(id, name, address, icon, radius, latitude, longitude, deviceIdList, user);
             
             // Redirect to success page with zone ID
             return "redirect:/zones/success?zoneId=" + updatedZone.getId() + "&updated=true";

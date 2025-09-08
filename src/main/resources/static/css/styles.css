@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Theming variables */
+:root {
+  --color-primary: #2C5282;
+  --color-accent: #50C878;
+  --color-error: #FF6B6B;
+  --color-background: #F5F5F5;
+  --color-text: #1A202C;
+  --color-border: #E2E8F0;
+  --color-shadow: rgba(0,0,0,0.15);
+}
+
+@layer components {
+  .header-themed {
+    background-color: var(--color-primary);
+  }
+  .btn-primary {
+    @apply text-white font-semibold rounded-xl transition-colors duration-200;
+    background-color: var(--color-primary);
+  }
+  .btn-primary:hover { filter: brightness(0.95); }
+
+  .card {
+    @apply rounded-xl border shadow-sm;
+    border-color: var(--color-border);
+    box-shadow: 0 4px 12px var(--color-shadow);
+    background-color: white;
+  }
+
+  .input-floating {
+    @apply relative;
+  }
+  .input-floating input {
+    @apply w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent;
+    border-color: var(--color-border);
+  }
+  .input-floating label {
+    @apply absolute left-3 top-3 text-gray-500 transition-all duration-150 pointer-events-none bg-white px-1;
+  }
+  .input-floating input:focus + label,
+  .input-floating input:not(:placeholder-shown) + label {
+    @apply text-xs -top-2.5 text-gray-600;
+  }
+}

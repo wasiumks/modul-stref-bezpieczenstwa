@@ -28,6 +28,6 @@ public record ZoneCreateRequest(
     Integer radius
 ) {
     public ZoneDto toZoneDto() {
-        return new ZoneDto(null, name, icon, address, latitude, longitude, radius);
+        return new ZoneDto(null, name, icon, address, latitude, longitude, radius, true);
     }
 }

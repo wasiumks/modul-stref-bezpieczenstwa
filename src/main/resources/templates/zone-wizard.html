@@ -50,6 +50,16 @@
                 </div>
             </div>
 
+            <!-- Hidden inputs for edit mode data -->
+            <div th:if="${isEditMode and existingZone != null}" style="display: none;">
+                <input type="hidden" id="editZoneId" th:value="${existingZone.id}">
+                <input type="hidden" id="editZoneName" th:value="${existingZone.name}">
+                <input type="hidden" id="editZoneIcon" th:value="${existingZone.icon}">
+                <input type="hidden" id="editZoneAddress" th:value="${existingZone.address}">
+                <input type="hidden" id="editZoneRadius" th:value="${existingZone.radius}">
+                <input type="hidden" id="editZoneDeviceIds" th:value="${existingZone.deviceIds != null ? #strings.listJoin(existingZone.deviceIds, ',') : ''}">
+            </div>
+
             <!-- Wizard Content -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-200">
                 <div class="p-8">
@@ -66,6 +76,7 @@
                             <input type="text" 
                                    id="zoneName" 
                                    placeholder="np. Dom, Szkoła, Praca..."
+                                   th:value="${existingZone?.name}"
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         
@@ -98,6 +109,7 @@
                             <input type="text" 
                                    id="zoneAddress" 
                                    placeholder="np. ul. Przykładowa 123, Warszawa"
+                                   th:value="${existingZone?.address}"
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
                         
@@ -137,7 +149,7 @@
                                        id="radiusSlider" 
                                        min="100" 
                                        max="5000" 
-                                       value="500" 
+                                       th:value="${existingZone?.radius ?: 500}" 
                                        step="50"
                                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                             </div>
@@ -219,6 +231,10 @@
                                     <span id="summaryName" class="font-medium">-</span>
                                 </div>
                                 <div class="flex justify-between">
+                                    <span>Ikona:</span>
+                                    <span id="summaryIcon" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between">
                                     <span>Adres:</span>
                                     <span id="summaryAddress" class="font-medium">-</span>
                                 </div>
@@ -249,7 +265,7 @@
                         </button>
                         <button type="button" 
                                 th:if="${currentStep < 3}"
-                                onclick="console.log('Button clicked! Current step from Thymeleaf:', /*[[${currentStep}]]*/); nextStep();" 
+                                onclick="nextStep();" 
                                 class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                             Dalej →
                         </button>
@@ -270,66 +286,229 @@
         // Global variables
         let selectedIcon = null;
         let currentStep = /*[[${currentStep}]]*/ 0;
+        let isEditMode = false;
+        let existingZoneId = null;
+        
+        // Icon mapping function
+        function getIconEmoji(iconName) {
+            const iconMap = {
+                'home': '🏠',
+                'school': '🏫',
+                'work': '🏢',
+                'hospital': '🏥',
+                'gym': '💪',
+                'park': '🌳',
+                'shop': '🛒',
+                'restaurant': '🍽️'
+            };
+            return iconMap[iconName] || '📍';
+        }
+        
+        // Get current step from URL parameter
+        function getCurrentStepFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const step = urlParams.get('step');
+            return step ? parseInt(step) : 0;
+        }
+        
+        // Update currentStep from URL
+        currentStep = getCurrentStepFromUrl();
+        
+        // Function to attach event listeners to form fields
+        function attachFormEventListeners() {
+            // Attach to name input if it exists
+            const nameInput = document.getElementById('zoneName');
+            if (nameInput) {
+                // Remove existing listeners first
+                nameInput.removeEventListener('input', handleNameChange);
+                nameInput.addEventListener('input', handleNameChange);
+            }
+            
+            // Attach to address input if it exists
+            const addressInput = document.getElementById('zoneAddress');
+            if (addressInput) {
+                // Remove existing listeners first
+                addressInput.removeEventListener('input', handleAddressChange);
+                addressInput.addEventListener('input', handleAddressChange);
+            }
+        }
+        
+        // Event handler functions
+        function handleNameChange(event) {
+            wizardData.name = event.target.value.trim();
+            saveWizardData();
+        }
+        
+        function handleAddressChange(event) {
+            wizardData.address = event.target.value.trim();
+            saveWizardData();
+        }
+        
         let wizardData = {
             name: '',
             icon: '',
             address: '',
             radius: 500,
-            devices: []
+            devices: [],
+            deviceIds: [],
+            devicesCount: 0
         };
+
+        // Initialize form with existing data if in edit mode
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if we're in edit mode by looking for the edit zone ID input
+            const editZoneIdInput = document.getElementById('editZoneId');
+            if (editZoneIdInput) {
+                isEditMode = true;
+                existingZoneId = editZoneIdInput.value;
+                
+                // Always initialize edit mode first to get device data from database
+                initializeEditMode();
+                
+                // Then load any saved data from localStorage to preserve user changes
+                const savedData = localStorage.getItem('wizardData');
+                if (savedData) {
+                    loadWizardData();
+                }
+            } else {
+                // Load any saved wizard data from localStorage
+                loadWizardData();
+            }
+            
+            // Attach event listeners to form fields
+            attachFormEventListeners();
+        });
+
+        function initializeEditMode() {
+            // Read data from hidden inputs
+            const editZoneId = document.getElementById('editZoneId');
+            const editZoneName = document.getElementById('editZoneName');
+            const editZoneIcon = document.getElementById('editZoneIcon');
+            const editZoneAddress = document.getElementById('editZoneAddress');
+            const editZoneRadius = document.getElementById('editZoneRadius');
+            const editZoneDeviceIds = document.getElementById('editZoneDeviceIds');
+            
+            if (!editZoneId) {
+                return;
+            }
+            
+            // Pre-fill form data from existing zone
+            const existingZone = {
+                id: editZoneId.value,
+                name: editZoneName ? editZoneName.value : '',
+                icon: editZoneIcon ? editZoneIcon.value : '',
+                address: editZoneAddress ? editZoneAddress.value : '',
+                radius: editZoneRadius ? parseInt(editZoneRadius.value) : 500,
+                deviceIds: editZoneDeviceIds ? editZoneDeviceIds.value.split(',').filter(id => id.trim()) : []
+            };
+            
+            // Pre-fill wizard data from database (this is the base data)
+            wizardData.name = existingZone.name || '';
+            wizardData.icon = existingZone.icon || '';
+            wizardData.address = existingZone.address || '';
+            wizardData.radius = existingZone.radius || 500;
+            wizardData.deviceIds = existingZone.deviceIds || [];
+            
+            // Ensure selectedIcon is set for edit mode
+            if (wizardData.icon) {
+                selectedIcon = { name: wizardData.icon, emoji: getIconEmoji(wizardData.icon) };
+            }
+            
+            // Pre-fill form fields (only if they exist on current step)
+            const nameInput = document.getElementById('zoneName');
+            const addressInput = document.getElementById('zoneAddress');
+            
+            if (nameInput) {
+                nameInput.value = existingZone.name || '';
+                
+                // Add event listener to save name changes immediately
+                nameInput.addEventListener('input', function() {
+                    wizardData.name = this.value.trim();
+                    saveWizardData();
+                });
+            }
+            if (addressInput) {
+                addressInput.value = existingZone.address || '';
+                
+                // Add event listener to save address changes immediately
+                addressInput.addEventListener('input', function() {
+                    wizardData.address = this.value.trim();
+                    saveWizardData();
+                });
+            }
+            
+            // Pre-select icon if it exists and we're on step 0
+            if (existingZone.icon && currentStep === 0) {
+                const iconElement = document.querySelector(`[data-icon="${existingZone.icon}"]`);
+                if (iconElement) {
+                    selectIconFromElement(iconElement);
+                }
+            }
+            
+            // Store device IDs for later selection when step 3 is reached
+            if (existingZone.deviceIds && existingZone.deviceIds.length > 0) {
+                // Store in wizardData for later use
+                wizardData.deviceIds = existingZone.deviceIds;
+                wizardData.devicesCount = existingZone.deviceIds.length;
+            }
+            
+            // Update radius display if we're on step 2
+            if (currentStep === 2) {
+                const radiusSlider = document.getElementById('radiusSlider');
+                const radiusValue = document.getElementById('radiusValue');
+                if (radiusSlider && radiusValue) {
+                    radiusSlider.value = existingZone.radius || 500;
+                    radiusValue.textContent = existingZone.radius || 500;
+                }
+            }
+        }
 
         // Navigation functions - defined globally
         window.nextStep = function() {
-            console.log('=== nextStep() CALLED ===');
-            console.log('currentStep:', currentStep);
-            console.log('typeof currentStep:', typeof currentStep);
-            
-            // Store debug info in localStorage so it persists after refresh
-            localStorage.setItem('debug_nextStep', JSON.stringify({
-                timestamp: new Date().toISOString(),
-                currentStep: currentStep,
-                functionCalled: true
-            }));
+            // Save current step data before validation
+            saveCurrentStepData();
             
             if (validateCurrentStep()) {
                 // Save current step data before moving to next step
                 saveWizardData();
                 
                 const nextStep = currentStep + 1;
-                console.log('Validation passed, moving to next step:', nextStep);
-                localStorage.setItem('debug_validation', JSON.stringify({
-                    timestamp: new Date().toISOString(),
-                    validationPassed: true,
-                    nextStep: nextStep
-                }));
                 
                 if (nextStep < 4) {
-                    console.log('Redirecting to:', `/zones/wizard?step=${nextStep}`);
-                    window.location.href = `/zones/wizard?step=${nextStep}`;
-                } else {
-                    console.log('Already at last step');
+                    // Build URL with edit parameters if in edit mode
+                    let url = `/zones/wizard?step=${nextStep}`;
+                    if (isEditMode && existingZoneId) {
+                        url += `&edit=true&id=${existingZoneId}`;
+                    }
+                    window.location.href = url;
                 }
-            } else {
-                console.log('=== VALIDATION FAILED ===');
-                localStorage.setItem('debug_validation', JSON.stringify({
-                    timestamp: new Date().toISOString(),
-                    validationPassed: false,
-                    currentStep: currentStep
-                }));
+                
+                // If moving to step 3, pre-select devices after a short delay
+                if (nextStep === 3) {
+                    // Don't call loadWizardData here as it resets deviceIds
+                    setTimeout(() => {
+                        preSelectDevices();
+                    }, 100);
+                } else {
+                    // Only call loadWizardData for other steps
+                    loadWizardData();
+                }
             }
         }
 
         window.previousStep = function() {
-            console.log('previousStep() called, currentStep:', currentStep);
             const prevStep = currentStep - 1;
             if (prevStep >= 0) {
-                console.log('Moving to previous step:', prevStep);
-                window.location.href = `/zones/wizard?step=${prevStep}`;
+                // Build URL with edit parameters if in edit mode
+                let url = `/zones/wizard?step=${prevStep}`;
+                if (isEditMode && existingZoneId) {
+                    url += `&edit=true&id=${existingZoneId}`;
+                }
+                window.location.href = url;
             }
         }
 
         window.cancelWizard = function() {
-            console.log('cancelWizard() called');
             if (confirm('Czy na pewno chcesz anulować tworzenie strefy? Wszystkie wprowadzone dane zostaną utracone.')) {
                 localStorage.removeItem('wizardData');
                 window.location.href = '/zones';
@@ -337,7 +516,6 @@
         }
 
         window.selectIcon = function(iconName, iconEmoji) {
-            console.log('selectIcon() called:', iconName, iconEmoji);
             // Remove previous selection
             document.querySelectorAll('.icon-option').forEach(option => {
                 option.classList.remove('border-blue-500', 'bg-blue-50');
@@ -350,6 +528,7 @@
             
             selectedIcon = { name: iconName, emoji: iconEmoji };
             wizardData.icon = iconName;
+            
             updateSummary();
             saveWizardData();
         }
@@ -357,7 +536,6 @@
         window.selectIconFromElement = function(element) {
             const iconName = element.getAttribute('data-icon');
             const iconEmoji = element.getAttribute('data-emoji');
-            console.log('selectIconFromElement() called:', iconName, iconEmoji);
             
             // Remove previous selection
             document.querySelectorAll('.icon-option').forEach(option => {
@@ -371,6 +549,7 @@
             
             selectedIcon = { name: iconName, emoji: iconEmoji };
             wizardData.icon = iconName;
+            
             updateSummary();
             saveWizardData();
         }
@@ -388,18 +567,45 @@
         }
 
         window.saveZone = function() {
-            console.log('saveZone() called');
-            console.log('wizardData:', wizardData);
+            // Try to read current form values if they exist (for steps 0-2)
+            // But don't rely on them if we're on step 3 (summary)
+            if (currentStep < 3) {
+                const nameInput = document.getElementById('zoneName');
+                const addressInput = document.getElementById('zoneAddress');
+                const radiusSlider = document.getElementById('radiusSlider');
+                
+                if (nameInput && nameInput.value.trim()) {
+                    wizardData.name = nameInput.value.trim();
+                }
+                if (addressInput && addressInput.value.trim()) {
+                    wizardData.address = addressInput.value.trim();
+                }
+                if (radiusSlider && radiusSlider.value) {
+                    wizardData.radius = parseInt(radiusSlider.value) || 500;
+                }
+            }
             
-            // Use wizardData instead of trying to find form elements
+            // Save current step data before validation
+            saveCurrentStepData();
+            
             if (!wizardData.name || !wizardData.name.trim()) {
                 alert('Proszę wprowadzić nazwę strefy');
                 return;
             }
             
-            if (!wizardData.icon) {
+            if (!wizardData.icon || wizardData.icon.trim() === '') {
                 alert('Proszę wybrać ikonę strefy');
                 return;
+            }
+            
+            // Additional safety check - ensure selectedIcon is also set
+            if (!selectedIcon || !selectedIcon.name) {
+                if (wizardData.icon) {
+                    selectedIcon = { name: wizardData.icon, emoji: getIconEmoji(wizardData.icon) };
+                } else {
+                    alert('Błąd: Ikona nie została wybrana');
+                    return;
+                }
             }
             
             if (!wizardData.address || !wizardData.address.trim()) {
@@ -415,9 +621,7 @@
             
             // Get selected devices from checkboxes if they exist
             const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
-            console.log('Selected devices:', selectedDevices.length);
             selectedDevices.forEach(device => {
-                console.log('Device ID:', device.value);
                 formData.append('deviceIds', device.value);
             });
             
@@ -425,8 +629,12 @@
             wizardData.devicesCount = selectedDevices.length;
             wizardData.deviceIds = Array.from(selectedDevices).map(device => device.value);
             
-            fetch('/zones', {
-                method: 'POST',
+            // Determine the correct endpoint and method
+            const url = isEditMode ? `/zones/update/${existingZoneId}` : '/zones';
+            const method = 'POST';
+            
+            fetch(url, {
+                method: method,
                 body: formData
             })
             .then(response => {
@@ -434,27 +642,18 @@
                     localStorage.removeItem('wizardData');
                     window.location.href = response.url;
                 } else {
-                    alert('Wystąpił błąd podczas tworzenia strefy');
+                    alert(isEditMode ? 'Wystąpił błąd podczas aktualizacji strefy' : 'Wystąpił błąd podczas tworzenia strefy');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Wystąpił błąd podczas tworzenia strefy');
+                alert(isEditMode ? 'Wystąpił błąd podczas aktualizacji strefy' : 'Wystąpił błąd podczas tworzenia strefy');
             });
         }
 
         function validateCurrentStep() {
-            console.log('=== VALIDATE CURRENT STEP ===');
-            console.log('validateCurrentStep() called for step:', currentStep);
-            console.log('typeof currentStep:', typeof currentStep);
-            console.log('URL:', window.location.href);
-            console.log('selectedIcon:', selectedIcon);
-            console.log('wizardData:', wizardData);
-            
             // Only validate the current step's fields
             if (currentStep === 3) {
                 // Step 3 (summary) - no validation needed, just return true
-                console.log('Step 3 (summary) - no validation needed');
                 return true;
             } else if (currentStep === 0) {
                 // Step 0: Zone name and icon selection
@@ -466,8 +665,6 @@
                     zoneName = document.querySelector('input[type="text"]');
                 }
                 
-                console.log('zoneName element:', zoneName);
-                console.log('zoneName value:', zoneName ? zoneName.value : 'element not found');
                 
                 if (!zoneName || !zoneName.value.trim()) {
                     alert('Proszę wprowadzić nazwę strefy');
@@ -480,11 +677,12 @@
                     alert('Proszę wybrać ikonę strefy');
                     return false;
                 }
+                
+                // Save the icon
+                wizardData.icon = selectedIcon.name;
             } else if (currentStep === 1) {
                 // Step 1: Zone address
                 const zoneAddress = document.getElementById('zoneAddress');
-                console.log('zoneAddress element:', zoneAddress);
-                console.log('zoneAddress value:', zoneAddress ? zoneAddress.value : 'element not found');
                 if (!zoneAddress || !zoneAddress.value.trim()) {
                     alert('Proszę wprowadzić adres strefy');
                     return false;
@@ -507,46 +705,149 @@
             localStorage.setItem('wizardData', JSON.stringify(wizardData));
         }
         
+        function saveCurrentStepData() {
+            // Always try to save data from all visible form fields, regardless of current step
+            // This ensures we capture any changes the user made
+            
+            // Step 0: Name and Icon (if visible)
+            const nameInput = document.getElementById('zoneName');
+            if (nameInput && nameInput.value.trim()) {
+                wizardData.name = nameInput.value.trim();
+            }
+            
+            // Step 1: Address (if visible)
+            const addressInput = document.getElementById('zoneAddress');
+            if (addressInput && addressInput.value.trim()) {
+                wizardData.address = addressInput.value.trim();
+            }
+            
+            // Step 2: Radius (if visible)
+            const radiusSlider = document.getElementById('radiusSlider');
+            if (radiusSlider && radiusSlider.value) {
+                wizardData.radius = parseInt(radiusSlider.value) || 500;
+            }
+            
+            // Icon is already saved when selected via selectIcon functions
+        }
+        
         function loadWizardData() {
             const saved = localStorage.getItem('wizardData');
             if (saved) {
-                wizardData = { ...wizardData, ...JSON.parse(saved) };
+                const savedData = JSON.parse(saved);
                 
-                const zoneName = document.getElementById('zoneName');
-                if (zoneName && wizardData.name) {
-                    zoneName.value = wizardData.name;
+                // Preserve device data from database if it exists and saved data doesn't have devices
+                if (wizardData.deviceIds && wizardData.deviceIds.length > 0 && (!savedData.deviceIds || savedData.deviceIds.length === 0)) {
+                    savedData.deviceIds = wizardData.deviceIds;
                 }
                 
-                const zoneAddress = document.getElementById('zoneAddress');
-                if (zoneAddress && wizardData.address) {
-                    zoneAddress.value = wizardData.address;
+                // In edit mode, prioritize user changes (localStorage) over database data
+                // Always use localStorage data if it exists (user changes)
+                // Only fall back to database data if localStorage is empty
+                if (savedData.icon && savedData.icon.trim() !== '') {
+                    // Use saved icon data (user changes)
+                } else if (wizardData.icon && wizardData.icon.trim() !== '') {
+                    savedData.icon = wizardData.icon;
                 }
                 
-                const radiusSlider = document.getElementById('radiusSlider');
-                const radiusValue = document.getElementById('radiusValue');
-                if (radiusSlider && radiusValue && wizardData.radius) {
-                    radiusSlider.value = wizardData.radius;
-                    radiusValue.textContent = wizardData.radius;
-                }
+                wizardData = { ...wizardData, ...savedData };
                 
+                // Always restore icon selection regardless of step (for edit mode)
                 if (wizardData.icon) {
-                    selectedIcon = { name: wizardData.icon };
-                    document.querySelectorAll('.icon-option').forEach(option => {
-                        option.classList.remove('border-blue-500', 'bg-blue-50');
-                        option.classList.add('border-gray-200');
-                    });
-                    const selectedOption = document.querySelector(`[data-icon="${wizardData.icon}"]`);
-                    if (selectedOption) {
-                        selectedOption.classList.add('border-blue-500', 'bg-blue-50');
-                        selectedOption.classList.remove('border-gray-200');
+                    selectedIcon = { name: wizardData.icon, emoji: getIconEmoji(wizardData.icon) };
+                }
+                
+                // Restore form fields based on current step
+                if (currentStep === 0) {
+                    // Step 0: Name and Icon
+                    const zoneName = document.getElementById('zoneName');
+                    if (zoneName && wizardData.name) {
+                        zoneName.value = wizardData.name;
+                        // Add event listener to save name changes immediately
+                        zoneName.addEventListener('input', function() {
+                            wizardData.name = this.value.trim();
+                            saveWizardData();
+                        });
+                    }
+                    
+                    // Restore icon selection UI
+                    if (wizardData.icon) {
+                        document.querySelectorAll('.icon-option').forEach(option => {
+                            option.classList.remove('border-blue-500', 'bg-blue-50');
+                            option.classList.add('border-gray-200');
+                        });
+                        const selectedOption = document.querySelector(`[data-icon="${wizardData.icon}"]`);
+                        if (selectedOption) {
+                            selectedOption.classList.add('border-blue-500', 'bg-blue-50');
+                            selectedOption.classList.remove('border-gray-200');
+                        }
+                    }
+                } else if (currentStep === 1) {
+                    // Step 1: Address
+                    const zoneAddress = document.getElementById('zoneAddress');
+                    if (zoneAddress && wizardData.address) {
+                        zoneAddress.value = wizardData.address;
+                        
+                        // Add event listener to save address changes immediately
+                        zoneAddress.addEventListener('input', function() {
+                            wizardData.address = this.value.trim();
+                            saveWizardData();
+                        });
+                    }
+                } else if (currentStep === 2) {
+                    // Step 2: Radius
+                    const radiusSlider = document.getElementById('radiusSlider');
+                    const radiusValue = document.getElementById('radiusValue');
+                    if (radiusSlider && radiusValue && wizardData.radius) {
+                        radiusSlider.value = wizardData.radius;
+                        radiusValue.textContent = wizardData.radius;
                     }
                 }
+                
+                // Always try to restore device selection if we have device data (regardless of current step)
+                if (wizardData.deviceIds && wizardData.deviceIds.length > 0) {
+                    // Only restore if we're not in edit mode (to avoid overriding database data)
+                    if (!isEditMode) {
+                        wizardData.deviceIds.forEach(deviceId => {
+                            // Convert string to number for comparison with checkbox values
+                            const deviceIdNum = parseInt(deviceId);
+                            const deviceCheckbox = document.querySelector(`input[value="${deviceIdNum}"]`);
+                            if (deviceCheckbox) {
+                                deviceCheckbox.checked = true;
+                            }
+                        });
+                    }
+                }
+                
+                updateSummary();
+            }
+            
+            
+            // Attach event listeners after loading data
+            attachFormEventListeners();
+            
+            // If we're on step 3, try to pre-select devices
+            if (currentStep === 3) {
+                preSelectDevices();
+            }
+        }
+
+        function preSelectDevices() {
+            if (wizardData.deviceIds && wizardData.deviceIds.length > 0) {
+                // Check if checkboxes exist
+                const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+                
+                wizardData.deviceIds.forEach(deviceId => {
+                    // Convert string to number for comparison with checkbox values
+                    const deviceIdNum = parseInt(deviceId);
+                    const deviceCheckbox = document.querySelector(`input[value="${deviceIdNum}"]`);
+                    if (deviceCheckbox) {
+                        deviceCheckbox.checked = true;
+                    }
+                });
             }
         }
 
         function updateSummary() {
-            console.log('updateSummary() called, wizardData:', wizardData);
-            
             // Try to get current values from form fields if they exist
             const nameInput = document.getElementById('zoneName');
             const addressInput = document.getElementById('zoneAddress');
@@ -554,34 +855,44 @@
             
             if (nameInput && nameInput.value) {
                 wizardData.name = nameInput.value;
-                console.log('Updated name from input:', wizardData.name);
             }
             if (addressInput && addressInput.value) {
                 wizardData.address = addressInput.value;
-                console.log('Updated address from input:', wizardData.address);
             }
             if (radiusSlider && radiusSlider.value) {
                 wizardData.radius = parseInt(radiusSlider.value);
-                console.log('Updated radius from input:', wizardData.radius);
             }
             
             // Update summary display
             const summaryName = document.getElementById('summaryName');
+            const summaryIcon = document.getElementById('summaryIcon');
             const summaryAddress = document.getElementById('summaryAddress');
             const summaryRadius = document.getElementById('summaryRadius');
             const summaryNotifications = document.getElementById('summaryNotifications');
             
             if (summaryName) {
                 summaryName.textContent = wizardData.name || '-';
-                console.log('Summary name set to:', wizardData.name || '-');
+            }
+            if (summaryIcon) {
+                // Map icon names to display names
+                const iconDisplayNames = {
+                    'home': '🏠 Dom',
+                    'school': '🏫 Szkoła', 
+                    'work': '🏢 Praca',
+                    'hospital': '🏥 Szpital',
+                    'gym': '💪 Siłownia',
+                    'park': '🌳 Park',
+                    'shop': '🛒 Sklep',
+                    'restaurant': '🍽️ Restauracja'
+                };
+                const iconDisplay = iconDisplayNames[wizardData.icon] || wizardData.icon || '-';
+                summaryIcon.textContent = iconDisplay;
             }
             if (summaryAddress) {
                 summaryAddress.textContent = wizardData.address || '-';
-                console.log('Summary address set to:', wizardData.address || '-');
             }
             if (summaryRadius) {
                 summaryRadius.textContent = (wizardData.radius || 500) + 'm';
-                console.log('Summary radius set to:', (wizardData.radius || 500) + 'm');
             }
             
             const selectedDevices = document.querySelectorAll('input[type="checkbox"]:checked');
@@ -589,11 +900,13 @@
             
             // Update wizardData with device count
             wizardData.devicesCount = deviceCount;
-            wizardData.deviceIds = Array.from(selectedDevices).map(device => device.value);
+            // Preserve deviceIds if nothing is checked yet (e.g., before preSelectDevices marks them)
+            if (deviceCount > 0) {
+                wizardData.deviceIds = Array.from(selectedDevices).map(device => device.value);
+            }
             
             if (summaryNotifications) {
                 summaryNotifications.textContent = deviceCount + ' urządzeń';
-                console.log('Summary notifications set to:', deviceCount + ' urządzeń');
             }
             
             // Save the updated data
@@ -607,31 +920,9 @@
                 const actualStep = parseInt(urlParams.get('step') || '0');
                 currentStep = actualStep; // Update the global variable
                 
-                console.log('Wizard initialized, currentStep from URL:', actualStep);
-                console.log('Wizard initialized, currentStep variable:', currentStep);
-                
-                // Display debug information from previous page loads
-                const debugNextStep = localStorage.getItem('debug_nextStep');
-                const debugValidation = localStorage.getItem('debug_validation');
-                
-                if (debugNextStep) {
-                    console.log('=== DEBUG NEXTSTEP ===');
-                    console.log(JSON.parse(debugNextStep));
-                }
-                
-                if (debugValidation) {
-                    console.log('=== DEBUG VALIDATION ===');
-                    console.log(JSON.parse(debugValidation));
-                }
-                
-                // Clear debug info after displaying
-                localStorage.removeItem('debug_nextStep');
-                localStorage.removeItem('debug_validation');
-                
-                loadWizardData();
-                
-                // Update summary if we're on step 3
+                // On step 3 ensure pre-selection happens before summary reads selections
                 if (currentStep === 3) {
+                    preSelectDevices();
                     updateSummary();
                 }
             

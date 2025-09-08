@@ -68,4 +68,16 @@ public class ZoneApiController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @PutMapping("/{id}/notifications")
+    public ResponseEntity<ZoneDto> toggleNotifications(@PathVariable Long id, 
+                                                     @RequestParam Boolean enabled) {
+        log.info("PUT /api/zones/{}/notifications - Toggling notifications to: {}", id, enabled);
+        try {
+            Zone updatedZone = zoneService.toggleNotifications(id, enabled);
+            return ResponseEntity.ok(ZoneDto.from(updatedZone));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

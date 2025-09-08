@@ -27,7 +27,10 @@ public record ZoneDto(
     
     @NotNull(message = "Radius is required")
     @Positive(message = "Radius must be positive")
-    Integer radius
+    Integer radius,
+    
+    @NotNull(message = "Notifications enabled status is required")
+    Boolean notificationsEnabled
 ) {
     public static ZoneDto from(Zone zone) {
         return new ZoneDto(
@@ -37,7 +40,8 @@ public record ZoneDto(
             zone.getAddress(),
             zone.getLatitude(),
             zone.getLongitude(),
-            zone.getRadius()
+            zone.getRadius(),
+            zone.getNotificationsEnabled()
         );
     }
     

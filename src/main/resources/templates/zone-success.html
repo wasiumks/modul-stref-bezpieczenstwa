@@ -13,8 +13,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-4">Strefa została utworzona!</h1>
-                <p class="text-lg text-gray-600 mb-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4" 
+                    th:text="${updated ? 'Strefa została zaktualizowana!' : 'Strefa została utworzona!'}">
+                    Strefa została utworzona!
+                </h1>
+                <p class="text-lg text-gray-600 mb-8" 
+                   th:text="${updated ? 'Twoja strefa bezpieczeństwa została pomyślnie zaktualizowana i jest już aktywna.' : 'Twoja strefa bezpieczeństwa została pomyślnie dodana i jest już aktywna.'}">
                     Twoja strefa bezpieczeństwa została pomyślnie dodana i jest już aktywna.
                 </p>
             </div>
@@ -22,8 +26,50 @@
             <!-- Zone Summary Card -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-orange-100">
-                        <span class="text-3xl">🏞️</span>
+                    <!-- Home Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-blue-100" 
+                         th:if="${zone.icon == 'home'}">
+                        <span class="text-3xl">🏠</span>
+                    </div>
+                    <!-- School Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-green-100" 
+                         th:if="${zone.icon == 'school'}">
+                        <span class="text-3xl">🏫</span>
+                    </div>
+                    <!-- Work Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-purple-100" 
+                         th:if="${zone.icon == 'work'}">
+                        <span class="text-3xl">🏢</span>
+                    </div>
+                    <!-- Hospital Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-orange-100" 
+                         th:if="${zone.icon == 'hospital'}">
+                        <span class="text-3xl">🏥</span>
+                    </div>
+                    <!-- Gym Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-red-100" 
+                         th:if="${zone.icon == 'gym'}">
+                        <span class="text-3xl">💪</span>
+                    </div>
+                    <!-- Park Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-emerald-100" 
+                         th:if="${zone.icon == 'park'}">
+                        <span class="text-3xl">🌳</span>
+                    </div>
+                    <!-- Shop Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-yellow-100" 
+                         th:if="${zone.icon == 'shop'}">
+                        <span class="text-3xl">🛒</span>
+                    </div>
+                    <!-- Restaurant Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-pink-100" 
+                         th:if="${zone.icon == 'restaurant'}">
+                        <span class="text-3xl">🍽️</span>
+                    </div>
+                    <!-- Default Icon -->
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mr-4 bg-gray-100" 
+                         th:unless="${zone.icon == 'home' or zone.icon == 'school' or zone.icon == 'work' or zone.icon == 'hospital' or zone.icon == 'gym' or zone.icon == 'park' or zone.icon == 'shop' or zone.icon == 'restaurant'}">
+                        <span class="text-3xl">📍</span>
                     </div>
                     <div class="text-left">
                         <h2 class="text-2xl font-bold text-gray-900" th:text="${zone.name}">Nazwa strefy</h2>

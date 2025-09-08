@@ -102,8 +102,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('=== LOGIN PAGE LOADED ===');
-            
             const loginForm = document.getElementById('loginForm');
             const otpForm = document.getElementById('otpForm');
             const sendOtpBtn = document.getElementById('sendOtpBtn');
@@ -113,18 +111,7 @@
             const messageContent = document.getElementById('messageContent');
             let currentPhone = '';
 
-            console.log('Elements found:', {
-                loginForm: !!loginForm,
-                otpForm: !!otpForm,
-                sendOtpBtn: !!sendOtpBtn,
-                verifyOtpBtn: !!verifyOtpBtn,
-                backBtn: !!backBtn,
-                messageContainer: !!messageContainer,
-                messageContent: !!messageContent
-            });
-
             function showMessage(message, isError = false) {
-                console.log('Showing message:', message);
                 messageContent.innerHTML = message.replace(/\n/g, '<br>');
                 messageContent.className = `rounded-md p-4 ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
                 messageContainer.classList.remove('hidden');
@@ -143,15 +130,12 @@
 
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                console.log('=== FORM SUBMITTED ===');
                 const phone = document.getElementById('phone').value;
-                console.log('Phone number:', phone);
                 currentPhone = phone;
                 
                 setLoading(sendOtpBtn, true);
                 
                 try {
-                    console.log('Sending request to /auth/send-otp');
                     const response = await fetch('/auth/send-otp', {
                         method: 'POST',
                         headers: {
@@ -160,9 +144,7 @@
                         body: JSON.stringify({ phone: phone })
                     });
                     
-                    console.log('Response status:', response.status);
                     const data = await response.json();
-                    console.log('Response data:', data);
                     
                     if (response.ok) {
                         showMessage(`✅ Kod OTP został wysłany!\n\n🔑 Twój kod: ${data.otp}\n\n⏰ Kod wygasa za 5 minut`, false);
@@ -172,7 +154,6 @@
                         showMessage(data.error || 'Błąd podczas wysyłania kodu OTP', true);
                     }
                 } catch (error) {
-                    console.error('Error:', error);
                     showMessage('Błąd połączenia', true);
                 } finally {
                     setLoading(sendOtpBtn, false);
@@ -181,9 +162,7 @@
 
             otpForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                console.log('=== OTP FORM SUBMITTED ===');
                 const otp = document.getElementById('otp').value;
-                console.log('OTP entered:', otp);
                 
                 setLoading(verifyOtpBtn, true);
                 
@@ -197,7 +176,6 @@
                     });
                     
                     const data = await response.json();
-                    console.log('OTP verification response:', data);
                     
                     if (data.success) {
                         showMessage('Logowanie pomyślne! Przekierowywanie...', false);
@@ -208,7 +186,6 @@
                         showMessage(data.error || 'Nieprawidłowy kod OTP', true);
                     }
                 } catch (error) {
-                    console.error('OTP verification error:', error);
                     showMessage('Błąd połączenia', true);
                 } finally {
                     setLoading(verifyOtpBtn, false);
@@ -216,7 +193,6 @@
             });
 
             backBtn.addEventListener('click', function() {
-                console.log('Back button clicked');
                 otpForm.classList.add('hidden');
                 loginForm.classList.remove('hidden');
                 document.getElementById('otp').value = '';

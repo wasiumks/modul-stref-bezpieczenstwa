@@ -121,15 +121,12 @@
 
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                console.log('Form submitted!');
                 const phone = document.getElementById('phone').value;
-                console.log('Phone number:', phone);
                 currentPhone = phone;
                 
                 setLoading(sendOtpBtn, true);
                 
                 try {
-                    console.log('Sending request to /auth/send-otp');
                     const response = await fetch('/auth/send-otp', {
                         method: 'POST',
                         headers: {
@@ -138,9 +135,7 @@
                         body: JSON.stringify({ phone: phone })
                     });
                     
-                    console.log('Response status:', response.status);
                     const data = await response.json();
-                    console.log('Response data:', data);
                     
                     if (response.ok) {
                         showMessage(`✅ Kod OTP został wysłany!\n\n🔑 Twój kod: ${data.otp}\n\n⏰ Kod wygasa za 5 minut`, false);

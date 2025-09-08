@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -23,16 +24,14 @@ public class ZonesController {
     private ZoneService zoneService;
 
     @GetMapping("/zones")
-    public String zones(@RequestParam(required = false) String deleted, Model model, HttpSession session) {
+    public String zones(@RequestParam(required = false) String deleted, 
+                       @RequestParam(required = false) String error,
+                       @RequestParam(required = false) String message,
+                       Model model, HttpSession session) {
         // Get user from session
         User user = (User) session.getAttribute("user");
-        System.out.println("=== ZONES CONTROLLER ===");
-        System.out.println("Session ID: " + session.getId());
-        System.out.println("User in session: " + (user != null ? user.getPhone() + " - " + user.getRole() : "null"));
-        System.out.println("All session attributes: " + java.util.Collections.list(session.getAttributeNames()));
         
         if (user == null) {
-            System.out.println("No user in session, redirecting to login");
             return "redirect:/auth/login";
         }
         
@@ -42,6 +41,13 @@ public class ZonesController {
         // Get statistics
         long totalZones = zoneService.getZoneCountByUser(user);
         int totalDevices = zoneService.getTotalDeviceCountByUser(user);
+        
+        // Device mapping for display
+        Map<String, String> deviceIdToName = Map.of(
+            "1", "iPhone 13",
+            "2", "Apple Watch", 
+            "3", "Samsung Galaxy"
+        );
 
         model.addAttribute("pageTitle", "Strefy Bezpieczeństwa");
         model.addAttribute("pageDescription", "Zarządzaj strefami bezpieczeństwa dla swoich bliskich");
@@ -49,14 +55,20 @@ public class ZonesController {
         model.addAttribute("hasZones", !zones.isEmpty());
         model.addAttribute("user", user);
         model.addAttribute("showDeletedMessage", "true".equals(deleted));
+        model.addAttribute("showError", "true".equals(error));
+        model.addAttribute("errorMessage", message);
         model.addAttribute("totalZones", totalZones);
         model.addAttribute("totalDevices", totalDevices);
+        model.addAttribute("deviceIdToName", deviceIdToName);
 
         return "zones";
     }
 
     @GetMapping("/zones/wizard")
-    public String zoneWizard(@RequestParam(defaultValue = "0") int step, Model model, HttpSession session) {
+    public String zoneWizard(@RequestParam(defaultValue = "0") int step, 
+                            @RequestParam(required = false) Boolean edit,
+                            @RequestParam(required = false) Long id,
+                            Model model, HttpSession session) {
         // Get user from session
         User user = (User) session.getAttribute("user");
         
@@ -91,18 +103,29 @@ public class ZonesController {
                 Map.of("id", 3, "name", "Samsung Galaxy", "type", "Telefon")
         );
 
-        model.addAttribute("pageTitle", "Kreator strefy");
+        // Load existing zone data if editing
+        Zone existingZone = null;
+        if (Boolean.TRUE.equals(edit) && id != null) {
+            existingZone = zoneService.getZoneByIdAndUser(id, user)
+                    .orElseThrow(() -> new RuntimeException("Zone not found"));
+        }
+
+        model.addAttribute("pageTitle", Boolean.TRUE.equals(edit) ? "Edytuj strefę" : "Kreator strefy");
         model.addAttribute("currentStep", step);
         model.addAttribute("wizardSteps", wizardSteps);
         model.addAttribute("availableIcons", availableIcons);
         model.addAttribute("userDevices", userDevices);
         model.addAttribute("user", user);
+        model.addAttribute("isEditMode", Boolean.TRUE.equals(edit));
+        model.addAttribute("existingZone", existingZone);
 
         return "zone-wizard";
     }
 
     @GetMapping("/zones/success")
-    public String zoneSuccess(@RequestParam Long zoneId, Model model, HttpSession session) {
+    public String zoneSuccess(@RequestParam Long zoneId, 
+                            @RequestParam(required = false) Boolean updated,
+                            Model model, HttpSession session) {
         // Get user from session
         User user = (User) session.getAttribute("user");
         
@@ -118,16 +141,13 @@ public class ZonesController {
         long totalZones = zoneService.getZoneCountByUser(user);
         int totalDevices = zoneService.getTotalDeviceCountByUser(user);
         
-        // Debug logging
-        System.out.println("=== ZONE SUCCESS DEBUG ===");
-        System.out.println("zoneId: " + zoneId);
-        System.out.println("zone: " + zone.getName() + " - " + zone.getAddress());
 
-        model.addAttribute("pageTitle", "Strefa utworzona");
+        model.addAttribute("pageTitle", Boolean.TRUE.equals(updated) ? "Strefa zaktualizowana" : "Strefa utworzona");
         model.addAttribute("zone", zone);
         model.addAttribute("totalZones", totalZones);
         model.addAttribute("totalDevices", totalDevices);
         model.addAttribute("user", user);
+        model.addAttribute("updated", Boolean.TRUE.equals(updated));
 
         return "zone-success";
     }
@@ -146,16 +166,9 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
-        // Create zone in database
-        System.out.println("=== CREATING ZONE ===");
-        System.out.println("Name: " + name);
-        System.out.println("Icon: " + icon);
-        System.out.println("Address: " + address);
-        System.out.println("Radius: " + radius);
-        System.out.println("Device IDs: " + (deviceIds != null ? String.join(",", deviceIds) : "none"));
         
-        // Convert deviceIds array to List
-        List<String> deviceIdList = deviceIds != null ? Arrays.asList(deviceIds) : List.of();
+        // Convert deviceIds array to List (create mutable list for Hibernate)
+        List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
         // Create zone in database
         Zone createdZone = zoneService.createZone(name, address, icon, radius, deviceIdList, user);
@@ -164,8 +177,14 @@ public class ZonesController {
         return "redirect:/zones/success?zoneId=" + createdZone.getId();
     }
 
-    @GetMapping("/zones/edit/{id}")
-    public String editZone(@PathVariable int id, Model model, HttpSession session) {
+    @PostMapping("/zones/update/{id}")
+    public String updateZone(@PathVariable Long id,
+                           @RequestParam String name, 
+                           @RequestParam String icon, 
+                           @RequestParam String address, 
+                           @RequestParam int radius, 
+                           @RequestParam(required = false) String[] deviceIds,
+                           HttpSession session) {
         // Get user from session
         User user = (User) session.getAttribute("user");
         
@@ -173,10 +192,59 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
-        // For now, redirect to wizard with edit mode
-        // In a real implementation, this would load existing zone data
-        System.out.println("=== EDITING ZONE ===");
-        System.out.println("Zone ID: " + id);
+        
+        // Validate required fields
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nazwa strefy jest wymagana");
+        }
+        if (icon == null || icon.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ikona strefy jest wymagana");
+        }
+        if (address == null || address.trim().isEmpty()) {
+            throw new IllegalArgumentException("Adres strefy jest wymagany");
+        }
+        
+        // Convert deviceIds array to List (create mutable list for Hibernate)
+        List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
+        
+        try {
+            // Update zone in database
+            Zone updatedZone = zoneService.updateZone(id, name, address, icon, radius, deviceIdList, user);
+            
+            // Redirect to success page with zone ID
+            return "redirect:/zones/success?zoneId=" + updatedZone.getId() + "&updated=true";
+        } catch (Exception e) {
+            
+            // Create a more meaningful error message
+            String errorMessage = e.getMessage();
+            if (errorMessage == null || errorMessage.trim().isEmpty()) {
+                errorMessage = "Nieznany błąd podczas aktualizacji strefy: " + e.getClass().getSimpleName();
+            }
+            
+            // URL encode the error message to handle special characters
+            try {
+                errorMessage = java.net.URLEncoder.encode(errorMessage, "UTF-8");
+            } catch (Exception encodingException) {
+                errorMessage = "Błąd podczas aktualizacji strefy";
+            }
+            
+            return "redirect:/zones?error=update_failed&message=" + errorMessage;
+        }
+    }
+
+    @GetMapping("/zones/edit/{id}")
+    public String editZone(@PathVariable Long id, Model model, HttpSession session) {
+        // Get user from session
+        User user = (User) session.getAttribute("user");
+        
+        if (user == null) {
+            return "redirect:/auth/login";
+        }
+
+        // Verify zone exists and belongs to user
+        Zone zone = zoneService.getZoneByIdAndUser(id, user)
+                .orElseThrow(() -> new RuntimeException("Zone not found"));
+        
         
         return "redirect:/zones/wizard?step=0&edit=true&id=" + id;
     }
@@ -191,14 +259,10 @@ public class ZonesController {
         }
 
         // Delete zone from database
-        System.out.println("=== DELETING ZONE ===");
-        System.out.println("Zone ID: " + id);
-        
         try {
             zoneService.deleteZone((long) id, user);
-            System.out.println("Zone deleted successfully");
         } catch (Exception e) {
-            System.out.println("Error deleting zone: " + e.getMessage());
+            // Handle error silently or log to proper logging framework
         }
         
         return "redirect:/zones?deleted=true";

@@ -187,4 +187,20 @@ public class ZoneService {
                 .mapToInt(Zone::getDeviceCount)
                 .sum();
     }
+    
+    /**
+     * Toggle notifications for a zone
+     */
+    public Zone toggleNotifications(Long zoneId, Boolean enabled) {
+        log.info("Toggling notifications for zone ID: {} to: {}", zoneId, enabled);
+        
+        Zone zone = zoneRepository.findById(zoneId)
+                .orElseThrow(() -> new RuntimeException("Zone not found"));
+        
+        zone.setNotificationsEnabled(enabled);
+        Zone updatedZone = zoneRepository.save(zone);
+        log.info("Notifications toggled successfully for zone ID: {}", zoneId);
+        
+        return updatedZone;
+    }
 }

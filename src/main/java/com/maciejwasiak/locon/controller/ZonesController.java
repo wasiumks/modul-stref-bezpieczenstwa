@@ -1,6 +1,7 @@
 package com.maciejwasiak.locon.controller;
 
 import com.maciejwasiak.locon.model.User;
+import com.maciejwasiak.locon.model.UserRole;
 import com.maciejwasiak.locon.model.Zone;
 import com.maciejwasiak.locon.service.ZoneService;
 import jakarta.servlet.http.HttpSession;
@@ -48,9 +49,9 @@ public class ZonesController {
         
         // Device mapping for display
         Map<String, String> deviceIdToName = Map.of(
-            "1", "iPhone 13",
-            "2", "Apple Watch", 
-            "3", "Samsung Galaxy"
+            "1", "Phone SOS",
+            "2", "GJD.13 Watch", 
+            "3", "BS.07 Band"
         );
 
         model.addAttribute("pageTitle", messageSource.getMessage("zones_title", null, LocaleContextHolder.getLocale()));
@@ -58,6 +59,7 @@ public class ZonesController {
         model.addAttribute("zones", zones);
         model.addAttribute("hasZones", !zones.isEmpty());
         model.addAttribute("user", user);
+        model.addAttribute("userRole", user.getRole().name());
         model.addAttribute("showDeletedMessage", "true".equals(deleted));
         model.addAttribute("showError", "true".equals(error));
         model.addAttribute("errorMessage", message);
@@ -124,6 +126,11 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
+        // Viewers cannot access the wizard
+        if (user.getRole() == UserRole.VIEWER) {
+            return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
+        }
+
         // Wizard steps configuration
         List<Map<String, String>> wizardSteps = List.of(
                 Map.of("title", "Nazwa i ikona", "description", "Wybierz nazwę i ikonę strefy"),
@@ -144,12 +151,20 @@ public class ZonesController {
                 Map.of("name", "restaurant", "emoji", "🍽️", "label", "Restauracja")
         );
 
-        // Mock user devices
-        List<Map<String, Object>> userDevices = List.of(
-                Map.of("id", 1, "name", "iPhone 13", "type", "Telefon"),
-                Map.of("id", 2, "name", "Apple Watch", "type", "Smartwatch"),
-                Map.of("id", 3, "name", "Samsung Galaxy", "type", "Telefon")
+        // Mock user devices (filtered per role)
+        List<Map<String, Object>> allDevices = List.of(
+                Map.of("id", 1, "name", "Phone SOS", "type", "Telefon"),
+                Map.of("id", 2, "name", "GJD.13 Watch", "type", "Smartwatch"),
+                Map.of("id", 3, "name", "BS.07 Band", "type", "Opaska")
         );
+        List<Map<String, Object>> userDevices;
+        if (user.getRole() == UserRole.ADMIN) {
+            userDevices = allDevices;
+        } else if (user.getRole() == UserRole.USER) {
+            userDevices = allDevices.stream().filter(d -> ((int)d.get("id")) != 3).toList();
+        } else {
+            userDevices = List.of();
+        }
 
         // Load existing zone data if editing
         Zone existingZone = null;
@@ -223,7 +238,10 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
-        
+        // Viewers cannot create zones
+        if (user.getRole() == UserRole.VIEWER) {
+            return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
+        }
         // Convert deviceIds array to List (create mutable list for Hibernate)
         List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
@@ -251,7 +269,9 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
-        
+        if (user.getRole() == UserRole.VIEWER) {
+            return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
+        }
         // Validate required fields
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa strefy jest wymagana");
@@ -317,6 +337,9 @@ public class ZonesController {
             return "redirect:/auth/login";
         }
 
+        if (user.getRole() == UserRole.VIEWER) {
+            return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
+        }
         // Delete zone from database
         try {
             zoneService.deleteZone((long) id, user);

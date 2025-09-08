@@ -45,7 +45,7 @@
                                 <h2 class="text-2xl font-bold text-gray-900" th:text="#{zones_title}">Strefy Bezpieczeństwa</h2>
                                 <p class="text-gray-600 text-sm mt-1" th:text="#{zones_manage_intro}">Zarządzaj strefami bezpieczeństwa</p>
                             </div>
-                            <button onclick="startZoneWizard()" 
+                            <button th:if="${userRole != 'VIEWER'}" onclick="startZoneWizard()" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
                                 <span th:text="'+' + ' ' + #{add_zone}">+ Dodaj strefę</span>
                             </button>
@@ -110,14 +110,14 @@
                                         </div>
                                     </div>
                                     <div class="flex space-x-2">
-                                        <a th:href="@{/zones/edit/{id}(id=${zone.id})}" 
+                                        <a th:if="${userRole == 'ADMIN' or userRole == 'USER'}" th:href="@{/zones/edit/{id}(id=${zone.id})}" 
                                            class="text-gray-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200"
                                            title="Edytuj strefę">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
                                         </a>
-                                        <button th:data-zone-id="${zone.id}" 
+                                        <button th:if="${userRole == 'ADMIN'}" th:data-zone-id="${zone.id}" 
                                                 th:data-zone-name="${zone.name}"
                                                 onclick="deleteZoneFromButton(this)" 
                                                 class="text-gray-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200"
@@ -159,6 +159,7 @@
                                                th:checked="${zone.notificationsEnabled}"
                                                th:data-zone-id="${zone.id}"
                                                onchange="toggleNotificationsFromCheckbox(this)"
+                                               th:disabled="${userRole == 'VIEWER'}"
                                                class="sr-only peer">
                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
                                     </label>
@@ -183,12 +184,16 @@
                         <!-- Hidden zones dataset for map -->
                         <div id="zonesData" style="display:none;">
                             <div th:each="z : ${zones}"
-                                 th:attr="data-lat=${z.latitude},data-lng=${z.longitude},data-icon=${z.icon},data-name=${z.name},data-radius=${z.radius}"></div>
+                                 th:attr="data-id=${z.id},data-lat=${z.latitude},data-lng=${z.longitude},data-icon=${z.icon},data-name=${z.name},data-radius=${z.radius}"></div>
                         </div>
 
                         <!-- Zones Map -->
                         <div class="mt-10">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3" th:text="#{zones_map}">Mapa stref</h3>
+                            <div class="mb-2 flex items-center gap-3">
+                                <button type="button" onclick="requestNotifyPermission()" class="px-3 py-1 rounded-md text-white btn-primary">Włącz powiadomienia</button>
+                                <button th:if="${userRole != 'VIEWER'}" type="button" onclick="simulateGeo()" class="px-3 py-1 rounded-md border">Symuluj zdarzenia</button>
+                            </div>
                             <div id="zonesMap" class="w-full bg-gray-100 rounded-xl border border-gray-200" style="height:400px;"></div>
                         </div>
                     </div>
@@ -233,7 +238,7 @@
                             </div>
                             
                             <!-- Call to Action -->
-                            <button onclick="startZoneWizard()" 
+                            <button th:if="${userRole != 'VIEWER'}" onclick="startZoneWizard()" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
                                 <span th:text="'+' + ' ' + #{add_first_zone}">+ Dodaj pierwszą strefę</span>
                             </button>
@@ -251,9 +256,11 @@
 
     <th:block layout:fragment="scripts">
 
-    <script>
+    <script th:inline="javascript">
         // Start zone creation wizard
         window.startZoneWizard = function() {
+            var role = /*[[${userRole}]]*/ 'VIEWER';
+            if (role === 'VIEWER') { showNotificationMessage('Brak uprawnień do tworzenia stref', 'error'); return; }
             window.location.href = '/zones/wizard?step=0';
         }
         
@@ -430,6 +437,39 @@
                     }
                 }, 300);
             }, 3000);
+        }
+        window.requestNotifyPermission = function() {
+            if (!('Notification' in window)) { alert('Powiadomienia nie są wspierane'); return; }
+            Notification.requestPermission().then((perm)=>{
+                showNotificationMessage(perm === 'granted' ? 'Powiadomienia aktywne' : 'Brak zgody na powiadomienia', perm === 'granted' ? 'success' : 'error');
+            });
+        }
+        window.simulateGeo = function() {
+            var role = /*[[${userRole}]]*/ 'VIEWER';
+            if (role === 'VIEWER') { showNotificationMessage('Brak uprawnień do symulacji', 'error'); return; }
+            const first = document.querySelector('#zonesData > div');
+            if (!first) { showNotificationMessage('Brak stref do symulacji', 'error'); return; }
+            const zoneIdAttr = first.getAttribute('data-id');
+            if (!zoneIdAttr) { showNotificationMessage('Brak ID strefy do symulacji', 'error'); return; }
+            const zoneId = parseInt(zoneIdAttr, 10);
+            if (Number.isNaN(zoneId)) { showNotificationMessage('Nieprawidłowe ID strefy', 'error'); return; }
+            fetch(`/api/geofence/events/${zoneId}?count=3`).then(r=>{
+                if (!r.ok) throw new Error('HTTP '+r.status);
+                return r.json();
+            }).then(events=>{
+                console.log('Mock events', events);
+                const count = Array.isArray(events) ? events.length : 0;
+                if (Notification.permission === 'granted') {
+                    (events || []).forEach(e => {
+                        new Notification(`${e.eventType} • ${e.zoneName}`, { body: `${e.deviceName} @ ${e.latitude.toFixed(5)}, ${e.longitude.toFixed(5)}` });
+                    });
+                } else {
+                    alert(`Zdarzenia: ${count}`);
+                }
+            }).catch((err)=> {
+                console.error('simulateGeo error', err);
+                showNotificationMessage('Błąd symulacji geofencingu', 'error')
+            });
         }
     
         // Logout functionality

@@ -7,9 +7,9 @@
     <div layout:fragment="content">
         <!-- Zones-specific content container -->
         <div class="space-y-6">
-            <!-- Page Description -->
-            <div th:if="${pageDescription}" class="text-center">
-                <p class="text-gray-600 text-sm" th:text="${pageDescription}">Opis strony</p>
+            <!-- Page Description (i18n) -->
+            <div class="text-center">
+                <p class="text-gray-600 text-sm" th:text="#{zones_manage_intro}">Zarządzaj strefami bezpieczeństwa dla swoich bliskich</p>
             </div>
             
             <!-- Success Message -->
@@ -42,12 +42,12 @@
                     <div th:if="${hasZones}" class="p-6">
                         <div class="flex justify-between items-center mb-6">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900">Twoje strefy</h2>
-                                <p class="text-gray-600 text-sm mt-1">Zarządzaj strefami bezpieczeństwa</p>
+                                <h2 class="text-2xl font-bold text-gray-900" th:text="#{zones_title}">Strefy Bezpieczeństwa</h2>
+                                <p class="text-gray-600 text-sm mt-1" th:text="#{zones_manage_intro}">Zarządzaj strefami bezpieczeństwa</p>
                             </div>
                             <button onclick="startZoneWizard()" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
-                                + Dodaj strefę
+                                <span th:text="'+' + ' ' + #{add_zone}">+ Dodaj strefę</span>
                             </button>
                         </div>
                         
@@ -135,7 +135,7 @@
                                         <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                                         </svg>
-                                        <span th:text="${zone.deviceCount} + ' urządzeń'">2 urządzeń</span>
+                                        <span th:text="#{devices_count(${zone.deviceCount})}">2 urządzeń</span>
                                     </div>
                                     <div class="flex items-center text-sm text-gray-600">
                                         <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@
                                         <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12 7H4.828zM4.828 17l2.586-2.586a2 2 0 012.828 0L12 17H4.828z"></path>
                                         </svg>
-                                        <span class="text-sm font-medium text-gray-700">Powiadomienia</span>
+                                        <span class="text-sm font-medium text-gray-700" th:text="#{zone_notifications}">Powiadomienia</span>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" 
@@ -166,7 +166,7 @@
                                 
                                 <!-- Device List -->
                                 <div class="border-t border-gray-100 pt-3">
-                                    <p class="text-xs text-gray-500 mb-2">Przypisane urządzenia:</p>
+                                    <p class="text-xs text-gray-500 mb-2" th:text="#{choose_devices}">Przypisane urządzenia:</p>
                                     <div class="flex flex-wrap gap-1">
                                         <span th:each="device : ${zone.deviceIds}" 
                                               class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -185,10 +185,10 @@
                     <div th:unless="${hasZones}" class="p-12 text-center">
                         <div class="max-w-2xl mx-auto">
                             <!-- Main Title -->
-                            <h2 class="text-3xl font-bold text-gray-900 mb-4">Strefy Bezpieczeństwa</h2>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-4" th:text="#{zones_title}">Strefy Bezpieczeństwa</h2>
                             
                             <!-- Intro Text -->
-                            <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
+                            <p class="text-lg text-gray-600 mb-8 max-w-xl mx-auto" th:text="#{zones_empty_description}">
                                 Stwórz strefy bezpieczeństwa dla swoich bliskich. Otrzymuj powiadomienia, gdy członkowie rodziny wchodzą lub wychodzą z określonych miejsc.
                             </p>
                             
@@ -223,11 +223,11 @@
                             <!-- Call to Action -->
                             <button onclick="startZoneWizard()" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg">
-                                + Dodaj pierwszą strefę
+                                <span th:text="'+' + ' ' + #{add_first_zone}">+ Dodaj pierwszą strefę</span>
                             </button>
                             
                             <!-- Additional Info -->
-                            <p class="text-sm text-gray-500 mt-6">
+                            <p class="text-sm text-gray-500 mt-6" th:text="#{zone_created_description}">
                                 Kliknij przycisk powyżej, aby rozpocząć kreator tworzenia strefy bezpieczeństwa
                             </p>
                         </div>

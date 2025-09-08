@@ -6,20 +6,25 @@
 <body>
     <div layout:fragment="content" class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
+            <!-- Language selector -->
+            <div class="flex justify-end">
+                <select id="language-selector" 
+                        class="appearance-none bg-transparent border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="pl" th:selected="${#locale.language == 'pl'}">PL</option>
+                    <option value="en" th:selected="${#locale.language == 'en'}">EN</option>
+                    <option value="de" th:selected="${#locale.language == 'de'}">DE</option>
+                </select>
+            </div>
             <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Logowanie do systemu
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
-                    Wprowadź numer telefonu, aby otrzymać kod OTP
-                </p>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" th:text="#{login_title}">Logowanie do systemu</h2>
+                <p class="mt-2 text-center text-sm text-gray-600" th:text="#{login_subtitle}">Wprowadź numer telefonu, aby otrzymać kod OTP</p>
             </div>
             
             <!-- Login Form -->
             <form class="mt-8 space-y-6" id="loginForm">
                 <div class="rounded-md shadow-sm -space-y-px">
                     <div>
-                        <label for="phone" class="sr-only">Numer telefonu</label>
+                        <label for="phone" class="sr-only" th:text="#{phone_number}">Numer telefonu</label>
                         <input id="phone" 
                                name="phone" 
                                type="tel" 
@@ -34,7 +39,7 @@
                     <button type="submit" 
                             id="sendOtpBtn"
                             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
-                        Wyślij kod OTP
+                        <span th:text="#{send_otp}">Wyślij kod OTP</span>
                     </button>
                 </div>
             </form>
@@ -43,7 +48,7 @@
             <form class="mt-8 space-y-6 hidden" id="otpForm">
                 <div class="rounded-md shadow-sm -space-y-px">
                     <div>
-                        <label for="otp" class="sr-only">Kod OTP</label>
+                        <label for="otp" class="sr-only" th:text="#{otp_code}">Kod OTP</label>
                         <input id="otp" 
                                name="otp" 
                                type="text" 
@@ -59,19 +64,19 @@
                     <button type="button" 
                             id="backBtn"
                             class="flex-1 py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Wróć
+                        <span th:text="#{back}">Wróć</span>
                     </button>
                     <button type="submit" 
                             id="verifyOtpBtn"
                             class="flex-1 py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
-                        Zaloguj się
+                        <span th:text="#{login}">Zaloguj się</span>
                     </button>
                 </div>
             </form>
 
             <!-- Demo Users Info -->
             <div class="mt-8 p-4 bg-blue-50 rounded-md">
-                <h3 class="text-sm font-medium text-blue-800 mb-2">Dane testowe:</h3>
+                <h3 class="text-sm font-medium text-blue-800 mb-2" th:text="#{demo_data}">Dane testowe:</h3>
                 <div class="text-xs text-blue-700 space-y-1">
                     <div><strong>Admin:</strong> +48123456789</div>
                     <div><strong>User:</strong> +48987654321</div>
@@ -79,7 +84,7 @@
                 </div>
                 <div class="mt-3 p-3 bg-yellow-100 border border-yellow-300 rounded-md">
                     <p class="text-xs text-yellow-800">
-                        <strong>Uwaga:</strong> Kod OTP będzie wyświetlony w konsoli aplikacji oraz w komunikacie na stronie.
+                        <strong th:text="#{note}">Uwaga:</strong> <span th:text="#{otp_note}">Kod OTP będzie wyświetlony w konsoli aplikacji oraz w komunikacie na stronie.</span>
                     </p>
                 </div>
             </div>
@@ -92,6 +97,17 @@
     </div>
 
     <script th:inline="javascript">
+        // Language selector functionality
+        (function(){
+          const sel = document.getElementById('language-selector');
+          if (sel) {
+            sel.addEventListener('change', function() {
+              const url = new URL(window.location.href);
+              url.searchParams.set('lang', this.value);
+              window.location.href = url.toString();
+            });
+          }
+        })();
         document.addEventListener('DOMContentLoaded', function() {
             const loginForm = document.getElementById('loginForm');
             const otpForm = document.getElementById('otpForm');

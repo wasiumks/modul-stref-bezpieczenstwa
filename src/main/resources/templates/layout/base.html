@@ -25,13 +25,13 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                         </svg>
-                        <span th:text="${backText ?: 'Wstecz'}">Wstecz</span>
+                        <span th:text="${backText} ?: #{back}">Wstecz</span>
                     </a>
                 </div>
                 
                 <!-- Page Title -->
                 <div class="flex-1 text-center">
-                    <h1 class="text-lg font-semibold text-gray-900" th:text="${pageTitle ?: 'Strefy'}">Strefy</h1>
+                    <h1 class="text-lg font-semibold text-gray-900" th:text="${pageTitle} ?: #{zones}">Strefy</h1>
                 </div>
                 
                 <!-- Right Side Actions -->
@@ -79,12 +79,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex justify-between items-center text-sm text-gray-500">
                 <div>
-                    <span>&copy; 2024 Bezpieczna Rodzina. Wszystkie prawa zastrzeżone.</span>
+                    <span th:text="#{footer_copyright}">&copy; 2024 Bezpieczna Rodzina. Wszystkie prawa zastrzeżone.</span>
                 </div>
                 <div class="flex space-x-4">
-                    <a href="#" class="hover:text-gray-700 transition-colors duration-200">Pomoc</a>
-                    <a href="#" class="hover:text-gray-700 transition-colors duration-200">Kontakt</a>
-                    <a href="#" class="hover:text-gray-700 transition-colors duration-200">Regulamin</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors duration-200" th:text="#{footer_help}">Pomoc</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors duration-200" th:text="#{footer_contact}">Kontakt</a>
+                    <a href="#" class="hover:text-gray-700 transition-colors duration-200" th:text="#{footer_terms}">Regulamin</a>
                 </div>
             </div>
         </div>

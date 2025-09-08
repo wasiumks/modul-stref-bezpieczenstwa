@@ -112,14 +112,16 @@
 
 ---
 
-## Phase 6 – Zone Management
-- [ ] **Edit Zone**
-  - Open wizard with pre-filled data
-  - Save changes with `PUT /api/zones/{id}`
-- [ ] **Delete Zone**
-  - Confirmation modal → call `DELETE /api/zones/{id}`
-- [ ] **Toggle Notifications**
-  - Enable/disable device notifications inside a zone
+## Phase 6 – Zone Management and i18n ✅ COMPLETED
+- [x] **Edit Zone**
+  - [x] Open wizard with pre-filled data
+  - [x] Save changes with `PUT /api/zones/{id}`
+- [x] **Delete Zone**
+  - [x] Confirmation modal → call `DELETE /api/zones/{id}`
+- [x] **Toggle Notifications**
+  - [x] Enable/disable device notifications inside a zone
+- [x] **Enable i18n and selector at the top of the page**
+  - [x] Enable usage of i18n across the page
 
 ---
 

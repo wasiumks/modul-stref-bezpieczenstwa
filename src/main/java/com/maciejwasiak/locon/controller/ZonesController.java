@@ -4,6 +4,7 @@ import com.maciejwasiak.locon.model.User;
 import com.maciejwasiak.locon.model.UserRole;
 import com.maciejwasiak.locon.model.Zone;
 import com.maciejwasiak.locon.service.ZoneService;
+import com.maciejwasiak.locon.service.DevicePermissionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -27,6 +28,8 @@ public class ZonesController {
     private ZoneService zoneService;
     @Autowired
     private MessageSource messageSource;
+    @Autowired
+    private DevicePermissionService devicePermissionService;
 
     @GetMapping("/zones")
     public String zones(@RequestParam(required = false) String deleted, 
@@ -139,19 +142,8 @@ public class ZonesController {
                 Map.of("name", "restaurant", "emoji", "🍽️", "label", "Restauracja")
         );
 
-        List<Map<String, Object>> allDevices = List.of(
-                Map.of("id", 1, "name", "Phone SOS", "type", "Telefon"),
-                Map.of("id", 2, "name", "GJD.13 Watch", "type", "Smartwatch"),
-                Map.of("id", 3, "name", "BS.07 Band", "type", "Opaska")
-        );
-        List<Map<String, Object>> userDevices;
-        if (user.getRole() == UserRole.ADMIN) {
-            userDevices = allDevices;
-        } else if (user.getRole() == UserRole.USER) {
-            userDevices = allDevices.stream().filter(d -> ((int)d.get("id")) != 3).toList();
-        } else {
-            userDevices = List.of();
-        }
+        // Get devices based on user permissions
+        List<Map<String, Object>> userDevices = devicePermissionService.getAvailableDevices(user.getRole());
 
         Zone existingZone = null;
         if (Boolean.TRUE.equals(edit) && id != null) {

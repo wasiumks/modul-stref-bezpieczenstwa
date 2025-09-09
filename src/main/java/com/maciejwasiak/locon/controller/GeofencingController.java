@@ -30,14 +30,15 @@ public class GeofencingController {
         @PathVariable Long zoneId,
         @RequestParam(name = "count", required = false, defaultValue = "10") int count
     ) {
-        log.info("Simulating geofence events: zoneId={}, count={}", zoneId, count);
+        log.info("Generating mock geofence events: zoneId={}, count={}", zoneId, count);
         List<GeofenceEventDto> events = geofencingService.generateMockEvents(zoneId, count);
-        for (GeofenceEventDto e : events) {
+        for (GeofenceEventDto event : events) {
             log.info("Geofence {}: zone='{}' device='{}' at [{}, {}] radius={}m time={}",
-                e.eventType(), e.zoneName(), e.deviceName(),
-                String.format("%.5f", e.latitude()), String.format("%.5f", e.longitude()),
-                e.radiusMeters(), e.occurredAt());
+                event.eventType(), event.zoneName(), event.deviceName(),
+                String.format("%.5f", event.latitude()), String.format("%.5f", event.longitude()),
+                event.radiusMeters(), event.occurredAt());
         }
+        log.debug("Generated {} mock events for zone {}", events.size(), zoneId);
         return ResponseEntity.ok(events);
     }
 }

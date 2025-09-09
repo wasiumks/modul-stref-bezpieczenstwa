@@ -26,19 +26,27 @@ public class DeviceApiController {
     public ResponseEntity<List<DeviceDto>> getUserDevices(HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
+            log.warn("Unauthorized access to devices endpoint");
             return ResponseEntity.status(401).build();
         }
         
-        log.debug("GET /api/devices");
+        log.debug("Getting devices for user: {}", user.getPhone());
         List<DeviceDto> devices = deviceService.getDevicesByUser(user);
+        log.debug("Found {} devices for user: {}", devices.size(), user.getPhone());
         return ResponseEntity.ok(devices);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<DeviceDto> getDeviceById(@PathVariable Long id) {
-        log.debug("GET /api/devices/{}", id);
+        log.debug("Getting device by id: {}", id);
         return deviceService.getDeviceById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(device -> {
+                    log.debug("Device found: {}", device.model());
+                    return ResponseEntity.ok(device);
+                })
+                .orElseGet(() -> {
+                    log.warn("Device not found with id: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
 }

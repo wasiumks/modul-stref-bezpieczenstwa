@@ -33,14 +33,16 @@ public class AuthController {
     @PostMapping("/send-otp")
     @ResponseBody
     public ResponseEntity<Map<String, String>> sendOtp(@Valid @RequestBody LoginRequest request) {
+        log.debug("Sending OTP for phone: {}", request.phone());
         try {
             String otp = authService.generateOtp(request.phone());
+            log.debug("OTP generated successfully for phone: {}", request.phone());
             return ResponseEntity.ok(Map.of(
                 "message", "OTP sent successfully",
-                "otp", otp // mocking OTP for testing
+                "otp", otp
             ));
         } catch (Exception e) {
-            log.error("Error sending OTP", e);
+            log.error("Error sending OTP for phone: {}", request.phone(), e);
             return ResponseEntity.badRequest()
                 .body(Map.of("error", "Failed to send OTP"));
         }
@@ -49,8 +51,8 @@ public class AuthController {
     @PostMapping("/verify-otp")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> verifyOtp(@Valid @RequestBody OtpRequest request, HttpSession session) {
+        log.debug("Verifying OTP for phone: {}", request.phone());
         try {
-            
             boolean isValid = authService.validateOtp(request.phone(), request.otp());
             log.debug("OTP validation result: {}", isValid);
             
@@ -63,14 +65,14 @@ public class AuthController {
                     session.setAttribute("userRole", user.getRole().name());
                     session.setAttribute("userPhone", user.getPhone());
                     
-                    log.debug("Session attributes set successfully");
+                    log.info("User {} successfully logged in with role: {}", user.getPhone(), user.getRole());
                     return ResponseEntity.ok(Map.of(
                         "success", true,
                         "message", "Login successful",
                         "redirectUrl", "/zones"
                     ));
                 } else {
-                    log.error("User not found after OTP validation");
+                    log.error("User not found after OTP validation for phone: {}", request.phone());
                     return ResponseEntity.badRequest()
                         .body(Map.of(
                             "success", false,
@@ -78,6 +80,7 @@ public class AuthController {
                         ));
                 }
             } else {
+                log.warn("Invalid OTP provided for phone: {}", request.phone());
                 return ResponseEntity.badRequest()
                     .body(Map.of(
                         "success", false,
@@ -85,7 +88,7 @@ public class AuthController {
                     ));
             }
         } catch (Exception e) {
-            log.error("Error verifying OTP", e);
+            log.error("Error verifying OTP for phone: {}", request.phone(), e);
             return ResponseEntity.badRequest()
                 .body(Map.of(
                     "success", false,
@@ -97,7 +100,9 @@ public class AuthController {
     @PostMapping("/logout")
     @ResponseBody
     public ResponseEntity<Map<String, String>> logout(HttpSession session) {
+        log.debug("User logging out");
         session.invalidate();
+        log.info("User successfully logged out");
         return ResponseEntity.ok(Map.of(
             "message", "Logged out successfully",
             "redirectUrl", "/auth/login"
@@ -107,16 +112,19 @@ public class AuthController {
     @GetMapping("/permissions")
     @ResponseBody
     public ResponseEntity<UserPermissionsDto> getUserPermissions(HttpSession session) {
+        log.debug("Getting user permissions");
         String userRole = (String) session.getAttribute("userRole");
         String userPhone = (String) session.getAttribute("userPhone");
         
         if (userRole == null || userPhone == null) {
+            log.debug("No user in session, returning default permissions");
             return ResponseEntity.ok(UserPermissionsDto.from(
                 com.maciejwasiak.locon.model.UserRole.VIEWER, 
                 "anonymous"
             ));
         }
         
+        log.debug("Returning permissions for user: {} with role: {}", userPhone, userRole);
         return ResponseEntity.ok(UserPermissionsDto.from(
             com.maciejwasiak.locon.model.UserRole.valueOf(userRole), 
             userPhone

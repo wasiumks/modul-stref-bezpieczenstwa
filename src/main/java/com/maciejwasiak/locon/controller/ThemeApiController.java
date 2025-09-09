@@ -22,15 +22,17 @@ public class ThemeApiController {
     
     @GetMapping("/{operator}")
     public ResponseEntity<Map<String, String>> getTheme(@PathVariable String operator) {
-        log.debug("GET /api/themes/{}", operator);
+        log.debug("Getting theme for operator: {}", operator);
         Map<String, String> theme = themeService.getThemeAsMap(operator);
+        log.debug("Retrieved theme for operator: {}", operator);
         return ResponseEntity.ok(theme);
     }
     
     @GetMapping("/{operator}/dto")
     public ResponseEntity<ThemeDto> getThemeDto(@PathVariable String operator) {
-        log.debug("GET /api/themes/{}/dto", operator);
+        log.debug("Getting theme DTO for operator: {}", operator);
         ThemeDto theme = themeService.getThemeForOperator(operator);
+        log.debug("Retrieved theme DTO for operator: {}", operator);
         return ResponseEntity.ok(theme);
     }
 }

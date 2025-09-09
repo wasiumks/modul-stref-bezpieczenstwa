@@ -295,8 +295,6 @@ node_modules/
 # Uncomment if you want to ignore Tailwind's output file
 # src/main/resources/static/css/output.css
 
-# Cursor AI
-.cursor/
 
 docs/Locon_zadanie.pdf
 docs/UX.txt

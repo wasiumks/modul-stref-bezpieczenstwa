@@ -62,9 +62,9 @@ public class GeofencingService {
 
     private String mockDeviceName(String deviceId) {
         return switch (deviceId) {
-            case "1" -> "iPhone 13";
-            case "2" -> "Apple Watch";
-            case "3" -> "Samsung Galaxy";
+            case "1" -> "Phone SOS";
+            case "2" -> "GJD.13 Watch";
+            case "3" -> "BS.07 Band";
             default -> "Device " + deviceId;
         };
     }

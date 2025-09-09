@@ -24,47 +24,57 @@ public class ZoneApiController {
     
     @GetMapping
     public ResponseEntity<List<ZoneDto>> getAllZones() {
-        log.debug("GET /api/zones");
+        log.debug("Getting all zones");
         List<Zone> zones = zoneService.getAllZones();
         List<ZoneDto> zoneDtos = zones.stream()
                 .map(ZoneDto::from)
                 .collect(Collectors.toList());
+        log.debug("Retrieved {} zones", zoneDtos.size());
         return ResponseEntity.ok(zoneDtos);
     }
     
     @GetMapping("/{id}")
     public ResponseEntity<ZoneDto> getZoneById(@PathVariable Long id) {
-        log.debug("GET /api/zones/{}", id);
+        log.debug("Getting zone by id: {}", id);
         return zoneService.getZoneById(id)
-                .map(ZoneDto::from)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(zone -> {
+                    log.debug("Zone found: {}", zone.getName());
+                    return ResponseEntity.ok(ZoneDto.from(zone));
+                })
+                .orElseGet(() -> {
+                    log.warn("Zone not found with id: {}", id);
+                    return ResponseEntity.notFound().build();
+                });
     }
     
     @PostMapping
     public ResponseEntity<ZoneDto> createZone(@Valid @RequestBody ZoneCreateRequest request) {
-        log.debug("POST /api/zones");
+        log.debug("Creating new zone: {}", request.name());
         ZoneDto zoneDto = request.toZoneDto();
         Zone createdZone = zoneService.createZone(zoneDto.name(), zoneDto.icon(), zoneDto.address(), 
                 zoneDto.latitude(), zoneDto.longitude(), zoneDto.radius());
+        log.info("Zone created successfully with id: {}", createdZone.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(ZoneDto.from(createdZone));
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<ZoneDto> updateZone(@PathVariable Long id, @Valid @RequestBody ZoneCreateRequest request) {
-        log.debug("PUT /api/zones/{}", id);
+        log.debug("Updating zone with id: {}", id);
         ZoneDto zoneDto = request.toZoneDto();
         Zone updatedZone = zoneService.updateZone(id, zoneDto);
+        log.info("Zone updated successfully with id: {}", id);
         return ResponseEntity.ok(ZoneDto.from(updatedZone));
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteZone(@PathVariable Long id) {
-        log.debug("DELETE /api/zones/{}", id);
+        log.debug("Deleting zone with id: {}", id);
         try {
             zoneService.deleteZone(id);
+            log.info("Zone deleted successfully with id: {}", id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
+            log.warn("Zone not found for deletion with id: {}", id);
             return ResponseEntity.notFound().build();
         }
     }
@@ -72,11 +82,13 @@ public class ZoneApiController {
     @PutMapping("/{id}/notifications")
     public ResponseEntity<ZoneDto> toggleNotifications(@PathVariable Long id, 
                                                      @RequestParam Boolean enabled) {
-        log.debug("PUT /api/zones/{}/notifications", id);
+        log.debug("Toggling notifications for zone id: {} to: {}", id, enabled);
         try {
             Zone updatedZone = zoneService.toggleNotifications(id, enabled);
+            log.info("Notifications toggled for zone id: {} to: {}", id, enabled);
             return ResponseEntity.ok(ZoneDto.from(updatedZone));
         } catch (RuntimeException e) {
+            log.warn("Zone not found for notification toggle with id: {}", id);
             return ResponseEntity.notFound().build();
         }
     }

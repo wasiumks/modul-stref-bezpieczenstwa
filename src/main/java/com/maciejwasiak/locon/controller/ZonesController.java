@@ -33,21 +33,16 @@ public class ZonesController {
                        @RequestParam(required = false) String error,
                        @RequestParam(required = false) String message,
                        Model model, HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
             return "redirect:/auth/login";
         }
         
-        // Get zones from database
         List<Zone> zones = zoneService.getZonesByUser(user);
-        
-        // Get statistics
         long totalZones = zoneService.getZoneCountByUser(user);
         int totalDevices = zoneService.getTotalDeviceCountByUser(user);
         
-        // Device mapping for display
         Map<String, String> deviceIdToName = Map.of(
             "1", "Phone SOS",
             "2", "GJD.13 Watch", 
@@ -70,9 +65,7 @@ public class ZonesController {
         return "zones";
     }
 
-    // Overload used by unit tests expecting a simplified flow and view name
     public String zones(String view, Model model, HttpSession session) {
-        // Touch mocked session methods so stubs are consumed in tests
         try {
             String sid = session.getId();
             java.util.Enumeration<String> names = session.getAttributeNames();
@@ -119,19 +112,15 @@ public class ZonesController {
                             @RequestParam(required = false) Boolean edit,
                             @RequestParam(required = false) Long id,
                             Model model, HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
             return "redirect:/auth/login";
         }
 
-        // Viewers cannot access the wizard
         if (user.getRole() == UserRole.VIEWER) {
             return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
         }
-
-        // Wizard steps configuration
         List<Map<String, String>> wizardSteps = List.of(
                 Map.of("title", "Nazwa i ikona", "description", "Wybierz nazwę i ikonę strefy"),
                 Map.of("title", "Lokalizacja", "description", "Ustaw lokalizację strefy"),
@@ -139,7 +128,6 @@ public class ZonesController {
                 Map.of("title", "Powiadomienia", "description", "Wybierz urządzenia do powiadomień")
         );
 
-        // Available icons
         List<Map<String, String>> availableIcons = List.of(
                 Map.of("name", "home", "emoji", "🏠", "label", "Dom"),
                 Map.of("name", "school", "emoji", "🏫", "label", "Szkoła"),
@@ -151,7 +139,6 @@ public class ZonesController {
                 Map.of("name", "restaurant", "emoji", "🍽️", "label", "Restauracja")
         );
 
-        // Mock user devices (filtered per role)
         List<Map<String, Object>> allDevices = List.of(
                 Map.of("id", 1, "name", "Phone SOS", "type", "Telefon"),
                 Map.of("id", 2, "name", "GJD.13 Watch", "type", "Smartwatch"),
@@ -166,7 +153,6 @@ public class ZonesController {
             userDevices = List.of();
         }
 
-        // Load existing zone data if editing
         Zone existingZone = null;
         if (Boolean.TRUE.equals(edit) && id != null) {
             existingZone = zoneService.getZoneByIdAndUser(id, user)
@@ -185,7 +171,6 @@ public class ZonesController {
         model.addAttribute("isEditMode", Boolean.TRUE.equals(edit));
         model.addAttribute("existingZone", existingZone);
 
-        // Provide a placeholder for Google Maps API key from configuration if needed
         String mapsApiKey = System.getenv().getOrDefault("GOOGLE_MAPS_API_KEY", "");
         model.addAttribute("googleMapsApiKey", mapsApiKey);
 
@@ -196,18 +181,15 @@ public class ZonesController {
     public String zoneSuccess(@RequestParam Long zoneId, 
                             @RequestParam(required = false) Boolean updated,
                             Model model, HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
             return "redirect:/auth/login";
         }
 
-        // Get zone from database
         Zone zone = zoneService.getZoneByIdAndUser(zoneId, user)
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
         
-        // Get statistics
         long totalZones = zoneService.getZoneCountByUser(user);
         int totalDevices = zoneService.getTotalDeviceCountByUser(user);
         
@@ -231,24 +213,20 @@ public class ZonesController {
                            @RequestParam(required = false) Double longitude,
                            @RequestParam(required = false) String[] deviceIds,
                            HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
             return "redirect:/auth/login";
         }
 
-        // Viewers cannot create zones
         if (user.getRole() == UserRole.VIEWER) {
             return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
         }
-        // Convert deviceIds array to List (create mutable list for Hibernate)
+        
         List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
-        // Create zone in database (with optional coordinates)
         Zone createdZone = zoneService.createZone(name, address, icon, radius, latitude, longitude, deviceIdList, user);
         
-        // Redirect to success page with zone ID
         return "redirect:/zones/success?zoneId=" + createdZone.getId();
     }
 
@@ -262,7 +240,6 @@ public class ZonesController {
                            @RequestParam(required = false) Double longitude,
                            @RequestParam(required = false) String[] deviceIds,
                            HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
@@ -272,7 +249,7 @@ public class ZonesController {
         if (user.getRole() == UserRole.VIEWER) {
             return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
         }
-        // Validate required fields
+        
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Nazwa strefy jest wymagana");
         }
@@ -283,24 +260,18 @@ public class ZonesController {
             throw new IllegalArgumentException("Adres strefy jest wymagany");
         }
         
-        // Convert deviceIds array to List (create mutable list for Hibernate)
         List<String> deviceIdList = deviceIds != null ? new ArrayList<>(Arrays.asList(deviceIds)) : new ArrayList<>();
         
         try {
-            // Update zone in database (with optional coordinates)
             Zone updatedZone = zoneService.updateZone(id, name, address, icon, radius, latitude, longitude, deviceIdList, user);
             
-            // Redirect to success page with zone ID
             return "redirect:/zones/success?zoneId=" + updatedZone.getId() + "&updated=true";
         } catch (Exception e) {
-            
-            // Create a more meaningful error message
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.trim().isEmpty()) {
                 errorMessage = "Nieznany błąd podczas aktualizacji strefy: " + e.getClass().getSimpleName();
             }
             
-            // URL encode the error message to handle special characters
             try {
                 errorMessage = java.net.URLEncoder.encode(errorMessage, "UTF-8");
             } catch (Exception encodingException) {
@@ -313,24 +284,20 @@ public class ZonesController {
 
     @GetMapping("/zones/edit/{id}")
     public String editZone(@PathVariable Long id, Model model, HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
             return "redirect:/auth/login";
         }
 
-        // Verify zone exists and belongs to user
         Zone zone = zoneService.getZoneByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Zone not found"));
-        
         
         return "redirect:/zones/wizard?step=0&edit=true&id=" + id;
     }
 
     @PostMapping("/zones/delete/{id}")
     public String deleteZone(@PathVariable int id, HttpSession session) {
-        // Get user from session
         User user = (User) session.getAttribute("user");
         
         if (user == null) {
@@ -340,11 +307,11 @@ public class ZonesController {
         if (user.getRole() == UserRole.VIEWER) {
             return "redirect:/zones?error=true&message=Brak%20uprawnie%C5%84";
         }
-        // Delete zone from database
+        
         try {
             zoneService.deleteZone((long) id, user);
         } catch (Exception e) {
-            // Handle error silently or log to proper logging framework
+            // Handle error silently
         }
         
         return "redirect:/zones?deleted=true";

@@ -22,7 +22,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/user/permissions").permitAll()
                 .requestMatchers("/api/geofence/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                .anyRequest().permitAll() // Temporarily allow all requests for testing
+                .anyRequest().permitAll()
             )
             .formLogin(form -> form
                 .loginPage("/auth/login")

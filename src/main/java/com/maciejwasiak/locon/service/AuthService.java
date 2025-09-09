@@ -19,23 +19,23 @@ public class AuthService {
     private final Random random = new Random();
     
     public String generateOtp(String phone) {
+        log.debug("Generating OTP for phone: {}", phone);
         String otp = String.format("%06d", random.nextInt(1000000));
         
-        // Find or create user
         User user = userRepository.findByPhone(phone)
                 .orElse(new User(phone, UserRole.USER));
         
-        // Set OTP and expiration (5 minutes from now)
         user.setOtpCode(otp);
         user.setOtpExpiresAt(LocalDateTime.now().plusMinutes(5));
         
         userRepository.save(user);
-        
+        log.info("OTP generated and saved for phone: {}", phone);
         
         return otp;
     }
     
     public boolean validateOtp(String phone, String otp) {
+        log.debug("Validating OTP for phone: {}", phone);
         return userRepository.findByPhone(phone)
                 .map(user -> {
                     if (user.getOtpCode() != null && 
@@ -43,30 +43,40 @@ public class AuthService {
                         user.getOtpExpiresAt() != null && 
                         user.getOtpExpiresAt().isAfter(LocalDateTime.now())) {
                         
-                        // Clear OTP after successful validation
                         user.setOtpCode(null);
                         user.setOtpExpiresAt(null);
                         userRepository.save(user);
+                        log.info("OTP validated successfully for phone: {}", phone);
                         return true;
                     }
+                    log.warn("Invalid or expired OTP for phone: {}", phone);
                     return false;
                 })
-                .orElse(false);
+                .orElseGet(() -> {
+                    log.warn("User not found for OTP validation: {}", phone);
+                    return false;
+                });
     }
     
     public User getUserByPhone(String phone) {
+        log.debug("Getting user by phone: {}", phone);
         return userRepository.findByPhone(phone).orElse(null);
     }
     
     public void createDefaultUsers() {
+        log.debug("Creating default users");
         if (userRepository.findByPhone("+48123456789").isEmpty()) {
             userRepository.save(new User("+48123456789", UserRole.ADMIN));
+            log.debug("Created admin user");
         }
         if (userRepository.findByPhone("+48987654321").isEmpty()) {
             userRepository.save(new User("+48987654321", UserRole.USER));
+            log.debug("Created regular user");
         }
         if (userRepository.findByPhone("+48555666777").isEmpty()) {
             userRepository.save(new User("+48555666777", UserRole.VIEWER));
+            log.debug("Created viewer user");
         }
+        log.info("Default users creation completed");
     }
 }

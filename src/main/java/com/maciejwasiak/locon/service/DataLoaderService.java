@@ -26,38 +26,33 @@ public class DataLoaderService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.debug("Starting data loading...");
         
-        // Check if data already exists
         if (userRepository.count() > 0) {
             log.debug("Data already exists, skipping data loading");
             return;
         }
         
-        // Create sample users
         User admin = createUser("+48123456789", UserRole.ADMIN);
         User user = createUser("+48987654321", UserRole.USER);
         User viewer = createUser("+48111222333", UserRole.VIEWER);
         
-        // Create sample devices
         Device adminPhone = createDevice("Phone", "iPhone 15", "Admin User", admin);
         Device userPhone = createDevice("Phone", "Samsung Galaxy S24", "Regular User", user);
         Device childWatch = createDevice("Child Watch", "KidsGuard Pro", "Emma (Child)", user);
         Device seniorBand = createDevice("Senior Band", "HealthTracker 3000", "John (Senior)", user);
         createDevice("Phone", "Google Pixel 8", "Viewer User", viewer);
         
-        // Create sample zones
         Zone homeZone = createZone("Home", "🏠", "123 Main Street, Warsaw, Poland", 52.2297, 21.0122, 100);
         Zone schoolZone = createZone("School", "🏫", "456 Education Ave, Warsaw, Poland", 52.2370, 21.0175, 200);
         
-        // Assign devices to zones
         createZoneDevice(homeZone, adminPhone, true);
         createZoneDevice(homeZone, userPhone, true);
         createZoneDevice(homeZone, childWatch, true);
         createZoneDevice(homeZone, seniorBand, true);
         
         createZoneDevice(schoolZone, childWatch, true);
-        createZoneDevice(schoolZone, userPhone, false); // Notifications disabled for school
+        createZoneDevice(schoolZone, userPhone, false);
         
-        log.debug("Data loading completed successfully!");
+        log.info("Data loading completed successfully!");
         log.debug("Created {} users, {} devices, {} zones, {} zone-device assignments", 
                 userRepository.count(), deviceRepository.count(), zoneRepository.count(), zoneDeviceRepository.count());
     }

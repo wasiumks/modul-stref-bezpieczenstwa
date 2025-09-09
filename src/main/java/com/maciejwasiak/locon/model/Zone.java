@@ -36,22 +36,18 @@ public class Zone {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    // User who created this zone
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    // Devices associated with this zone
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "zone_device_ids", joinColumns = @JoinColumn(name = "zone_id"))
     @Column(name = "device_id")
     private List<String> deviceIds = new java.util.ArrayList<>();
     
-    // Notifications enabled for this zone
     @Column(name = "notifications_enabled", nullable = false)
     private Boolean notificationsEnabled = true;
     
-    // Constructors
     public Zone() {
         this.createdAt = LocalDateTime.now();
     }
@@ -63,7 +59,6 @@ public class Zone {
         this.icon = icon;
         this.radius = radius;
         this.user = user;
-        // Set default coordinates (Warsaw, Poland)
         this.latitude = 52.2297;
         this.longitude = 21.0122;
     }
@@ -78,7 +73,6 @@ public class Zone {
         this.radius = radius;
     }
     
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -175,7 +169,6 @@ public class Zone {
         this.notificationsEnabled = notificationsEnabled;
     }
     
-    // Helper method to get device count
     public int getDeviceCount() {
         return deviceIds != null ? deviceIds.size() : 0;
     }

@@ -15,26 +15,26 @@ public record ThemeDto(
     public static ThemeDto createDefaultTheme(String operator) {
         return new ThemeDto(
             operator,
-            "#2C5282",  // primary
-            "#50C878",  // accent
-            "#FF6B6B",  // error
-            "#F5F5F5",  // background
-            "#1A202C",  // text
-            "#E2E8F0",  // border
-            "#000000"   // shadow
+            "#2C5282",
+            "#50C878",
+            "#FF6B6B",
+            "#F5F5F5",
+            "#1A202C",
+            "#E2E8F0",
+            "#000000"
         );
     }
     
     public static ThemeDto createDarkTheme(String operator) {
         return new ThemeDto(
             operator,
-            "#4299E1",  // primary
-            "#68D391",  // accent
-            "#FC8181",  // error
-            "#1A202C",  // background
-            "#F7FAFC",  // text
-            "#4A5568",  // border
-            "#000000"   // shadow
+            "#4299E1",
+            "#68D391",
+            "#FC8181",
+            "#1A202C",
+            "#F7FAFC",
+            "#4A5568",
+            "#000000"
         );
     }
     

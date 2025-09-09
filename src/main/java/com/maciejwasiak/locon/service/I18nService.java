@@ -17,12 +17,11 @@ public class I18nService {
     private final MessageSource messageSource;
     
     public Map<String, String> getTranslations(String language) {
-        log.debug("Fetching translations for language");
+        log.debug("Fetching translations for language: {}", language);
         
         Locale locale = getLocaleFromLanguage(language);
         Map<String, String> translations = new HashMap<>();
         
-        // Define all the message keys that should be included in the translation package
         String[] messageKeys = {
             "hello", "zones", "back", "add_zone", "add_first_zone", "add_another", "go_to_zones",
             "zone_name", "zone_address", "zone_radius", "zone_icon", "zone_notifications",
@@ -42,10 +41,11 @@ public class I18nService {
                 translations.put(key, translation);
             } catch (Exception e) {
                 log.debug("Translation not found for key: {} in language: {}", key, language);
-                translations.put(key, key); // Fallback to key if translation not found
+                translations.put(key, key);
             }
         }
         
+        log.debug("Retrieved {} translations for language: {}", translations.size(), language);
         return translations;
     }
     

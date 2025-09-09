@@ -13,9 +13,7 @@ import java.util.Map;
 public class ThemeService {
     
     public ThemeDto getThemeForOperator(String operator) {
-        log.debug("Fetching theme for operator");
-        
-        // Mock implementation - in real app this would fetch from database or external service
+        log.debug("Fetching theme for operator: {}", operator);
         return switch (operator.toLowerCase()) {
             case "play" -> createPlayTheme();
             case "plus" -> createPlusTheme();
@@ -26,32 +24,32 @@ public class ThemeService {
     }
     
     public Map<String, String> getThemeAsMap(String operator) {
+        log.debug("Getting theme as map for operator: {}", operator);
         return getThemeForOperator(operator).toMap();
     }
 
     private ThemeDto createPlayTheme() {
-        // Example brand-like colors (not official)
         return new ThemeDto(
             "Play",
-            "#5A2A82", // primary (purple)
-            "#7C3AED", // accent
-            "#EF4444", // error
-            "#F9FAFB", // background
-            "#111827", // text
-            "#E5E7EB", // border
-            "rgba(0,0,0,0.15)" // shadow
+            "#5A2A82",
+            "#7C3AED",
+            "#EF4444",
+            "#F9FAFB",
+            "#111827",
+            "#E5E7EB",
+            "rgba(0,0,0,0.15)"
         );
     }
 
     private ThemeDto createPlusTheme() {
         return new ThemeDto(
             "Plus",
-            "#00A651", // primary (green)
-            "#34D399", // accent
-            "#F87171", // error
-            "#F7FEE7", // background (very light green)
-            "#064E3B", // text (deep green)
-            "#D1FAE5", // border
+            "#00A651",
+            "#34D399",
+            "#F87171",
+            "#F7FEE7",
+            "#064E3B",
+            "#D1FAE5",
             "rgba(0,0,0,0.15)"
         );
     }
@@ -59,12 +57,12 @@ public class ThemeService {
     private ThemeDto createOrangeTheme() {
         return new ThemeDto(
             "Orange",
-            "#FF7900", // primary (orange)
-            "#FDBA74", // accent
-            "#DC2626", // error
-            "#FFF7ED", // background (warm)
-            "#1F2937", // text
-            "#FDE68A", // border
+            "#FF7900",
+            "#FDBA74",
+            "#DC2626",
+            "#FFF7ED",
+            "#1F2937",
+            "#FDE68A",
             "rgba(0,0,0,0.15)"
         );
     }
@@ -72,12 +70,12 @@ public class ThemeService {
     private ThemeDto createTMobileTheme() {
         return new ThemeDto(
             "T-Mobile",
-            "#E20074", // primary (magenta)
-            "#F472B6", // accent
-            "#FB7185", // error
-            "#FDF2F8", // background (rose-50)
-            "#111827", // text
-            "#FBCFE8", // border
+            "#E20074",
+            "#F472B6",
+            "#FB7185",
+            "#FDF2F8",
+            "#111827",
+            "#FBCFE8",
             "rgba(0,0,0,0.15)"
         );
     }

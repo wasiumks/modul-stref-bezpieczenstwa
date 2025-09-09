@@ -25,18 +25,16 @@ public class GeofencingService {
         this.zoneRepository = zoneRepository;
     }
 
-    /**
-     * Generates mock ENTER/EXIT events for devices assigned to a zone.
-     */
     public List<GeofenceEventDto> generateMockEvents(Long zoneId, int count) {
+        log.debug("Generating {} mock events for zone: {}", count, zoneId);
         Zone zone = zoneRepository.findById(zoneId)
             .orElseThrow(() -> new IllegalArgumentException("Zone not found"));
 
         List<GeofenceEventDto> events = new ArrayList<>();
         List<String> deviceIds = zone.getDeviceIds() != null ? zone.getDeviceIds() : List.of();
         if (deviceIds.isEmpty()) {
-            // If no devices are attached, simulate a single virtual device
             deviceIds = List.of("virtual-1");
+            log.debug("No devices assigned to zone, using virtual device");
         }
 
         for (int i = 0; i < Math.max(1, count); i++) {
@@ -71,10 +69,9 @@ public class GeofencingService {
         };
     }
 
-    // Add a tiny random offset within ~50m to coordinates
     private double[] jitterCoordinates(Double lat, Double lng, Integer radiusMeters) {
         if (lat == null || lng == null) {
-            lat = 52.2297; // default Warsaw
+            lat = 52.2297;
             lng = 21.0122;
         }
         double maxOffsetMeters = Math.min(50, radiusMeters != null ? radiusMeters / 5.0 : 50);

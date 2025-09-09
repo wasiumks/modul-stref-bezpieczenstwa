@@ -10,7 +10,7 @@ A comprehensive Spring Boot application for managing safety zones with real-time
 - **Multi-language Support**: Internationalization (i18n) for English, Polish, and German
 - **Dynamic Theming**: Operator-specific color schemes and UI customization
 - **Role-based Access**: Admin, User, and Viewer permission levels
-- **Interactive Maps**: Google Maps integration for zone creation and management
+- **Interactive Maps**: Maps integration for zone creation and management
 - **Responsive Design**: Modern UI built with Tailwind CSS and Thymeleaf
 
 ## 🏗️ Architecture
@@ -25,7 +25,7 @@ A comprehensive Spring Boot application for managing safety zones with real-time
 ### Frontend
 - **Templates**: Thymeleaf with responsive design
 - **Styling**: Tailwind CSS with daisyUI components
-- **Maps**: Google Maps JavaScript API
+- **Maps**: leafletjs + OSM Maps JavaScript API
 - **Internationalization**: Multi-language support
 
 ### Database Schema
@@ -39,7 +39,6 @@ A comprehensive Spring Boot application for managing safety zones with real-time
 - **Java 17** or higher
 - **Maven 3.6+**
 - **MySQL 8.0+** (for production)
-- **Google Maps API Key** (for map functionality)
 
 ## 🛠️ Installation & Setup
 
@@ -76,9 +75,6 @@ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
-
-# Google Maps API Key
-google.maps.api.key=your_google_maps_api_key
 
 # Server Configuration
 server.port=8080
@@ -170,11 +166,10 @@ The application supports various device types:
 - **Watch**: Smartwatch devices
 - **Band**: Fitness tracking bands
 
-## 🗺️ Google Maps Integration
+## 🗺️ Maps Integration
 
 - **Zone Creation**: Interactive map for setting zone locations
 - **Radius Visualization**: Visual representation of zone boundaries
-- **Address Geocoding**: Automatic address to coordinates conversion
 - **Drag & Drop**: Easy marker placement for zone positioning
 
 ## 🧪 Geofencing Simulation
@@ -196,9 +191,8 @@ The application supports various device types:
 
 ### Production Deployment
 1. Configure production database settings
-2. Set up Google Maps API key
-3. Configure security settings
-4. Deploy to your preferred platform (Docker, cloud services, etc.)
+2. Configure security settings
+3. Deploy to your preferred platform (Docker, cloud services, etc.)
 
 ### Docker Support
 ```dockerfile
